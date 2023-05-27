@@ -4,13 +4,14 @@
 #include "logic.h"
 #include "player.h"
 #include "levels.h"
+#include "enemies.h"
 
 
 class Graphics {
 
     public:
 
-        Graphics(Logic& logic, Player& players);
+        Graphics(Logic& logic, Player& players, Enemies& enemies);
 
         void render(sf::RenderWindow& window);
         void cameraView(sf::RenderWindow& window, sf::View& view);
@@ -28,6 +29,7 @@ class Graphics {
         
         Logic& logic;
         Player& player;
+        Enemies& enemies;
         Levels levels;
 
 

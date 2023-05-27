@@ -15,9 +15,9 @@ sf::Vector2f Levels::getImageDimensions(sf::Image image) {
 
     sf::Vector2f imageDimension;
     imageDimension.x = image.getSize().x;
-    std::cout << imageDimension.x << "\n";
+    //std::cout << imageDimension.x << "\n";
     imageDimension.y = image.getSize().y;
-    std::cout << imageDimension.y << "\n";
+    //std::cout << imageDimension.y << "\n";
     return imageDimension;
 }
 
@@ -95,7 +95,6 @@ std::vector<std::vector<int>> Levels::translateImage2() {
                     if (pixelColor.a > 0) {
                         hasColoredPixel = true;
                         cellColor = sf::Color(pixelColor.r, pixelColor.g, pixelColor.b);
-                        std::cout << cellColor.r << " " << cellColor.g << " " << cellColor.b << "\n"; 
                         break;
                     }
                 }

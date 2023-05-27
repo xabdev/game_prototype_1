@@ -6,7 +6,7 @@
 #include "player.h"
 #include "gridmanager.h"
 #include "levels.h"
-
+#include "enemies.h"
 
 
 
@@ -23,9 +23,10 @@ void handleEvents(sf::RenderWindow& window) {
 void runLogicTests() {
     // Create an instance of the Logic class
     Player player;
+    Enemies enemies;
     Levels levels;
-    Logic logic(player);
-    Graphics graphics(logic, player);
+    Logic logic(player, enemies);
+    Graphics graphics(logic, player, enemies);
     GridManager gridmanager(logic.gridWidth, logic.gridHeight);
 
     // Access the grid and perform tests
@@ -46,9 +47,10 @@ int main() {
     window.setFramerateLimit(60);
 
    Player player;
+   Enemies enemies;
    Levels levels;
-   Logic logic(player);
-   Graphics graphics(logic, player);
+   Logic logic(player, enemies);
+   Graphics graphics(logic, player, enemies);
    sf::View view;
    logic.preCalculatePlatformPositions();
     //for (const sf::FloatRect& rect : logic.platformBounds) {
@@ -63,7 +65,8 @@ int main() {
         
         handleEvents(window);
                 
-        logic.gravityZ();                
+        logic.gravityZ(); 
+        logic.updateEnemyVelocity();               
         logic.vJoy();
         
         

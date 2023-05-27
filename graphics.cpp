@@ -1,7 +1,7 @@
 #include "graphics.h"
 
 
-Graphics::Graphics(Logic& logic, Player& player) : logic(logic), player(player) {
+Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies) : logic(logic), player(player), enemies(enemies) {
     
 }
 
@@ -24,6 +24,9 @@ void Graphics::render(sf::RenderWindow& window) {
     }
        
     for (auto& element : levels.level) {
+        window.draw(element);
+    }
+    for (auto& element : enemies.enemies) {
         window.draw(element);
     }
     for (auto& element : player.playerCharacter) {

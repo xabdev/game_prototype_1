@@ -1,14 +1,17 @@
 #include "logic.h"
 
 
-Logic::Logic(Player& player) : gridmanager(gridWidth, gridHeight), player(player) {
+Logic::Logic(Player& player, Enemies& enemies) : gridmanager(gridWidth, gridHeight), player(player), enemies(enemies) {
     // Constructor initialization list, initializes the reference member
 
 }
 
 void Logic::gravityZ() {
     const float Gravity = 0.9f;
-    player.velocity.y += Gravity; 
+    player.velocity.y += Gravity;
+    for (auto& element : enemies.enemiesVelocities) {
+        element.y += Gravity;
+    }
     //player.playerCharacter[0].move(player.velocity);
 
 }
@@ -57,22 +60,28 @@ void Logic::vJoy() {
 
 
 void Logic::updatePlayerVelocity() {
-
-    
-
     // Apply drag to the player's velocity
     player.velocity.x *= 0.75;
-
     player.playerCharacter[0].move(player.velocity);
     //gravityZ();
-
     limitPlayerMovementToGrid();
     player.collision = collisionSide(platformBounds);
     
-    
-    
-    
 }
+
+void Logic::updateEnemyVelocity() {
+
+    const float Gravity = 0.9f;
+     for (int i = 0; i < enemies.enemies.size(); i++) {
+        enemies.enemiesVelocities[i].y += Gravity;
+        enemies.enemiesVelocities[i].x *= 0.75;
+        enemies.enemies[i].move(enemies.enemiesVelocities[i]);
+
+    }
+    collisionSideEnemy(platformBounds);
+
+}
+
 
 
 
@@ -197,4 +206,59 @@ std::array<bool, 4> Logic::collisionSide(const std::vector<sf::FloatRect>& platf
     return collisionSide;
 }
 
+std::array<bool, 4> Logic::collisionSideEnemy(const std::vector<sf::FloatRect>& platformBounds) {
+    std::array<bool, 4> collisionSide{ false, false, false, false };
+
+
+    //for (const auto& elementBounds : platformBounds) {
+        for (int i = 0; i < enemies.enemies.size(); i++) {
+            const sf::FloatRect enemyBounds = enemies.enemies[i].getGlobalBounds();
+            const sf::Vector2f enemyPosition = enemies.enemies[i].getPosition();
+            const sf::Vector2f enemySize = enemies.enemies[i].getSize();
+
+            for (auto& element : platformBounds) {
+
+
+            if (enemyBounds.intersects(element)) {
+                const float enemyTop = enemyPosition.y;
+                const float enemyBottom = enemyPosition.y + enemySize.y;
+                const float enemyLeft = enemyPosition.x;
+                const float enemyRight = enemyPosition.x + enemySize.x;
+
+                const float shapeTop = element.top;
+                const float shapeBottom = element.top + element.height;
+                const float shapeLeft = element.left;
+                const float shapeRight = element.left + element.width;
+
+                const float topOverlap = enemyBottom - shapeTop;
+                const float bottomOverlap = shapeBottom - enemyTop;
+                const float leftOverlap = enemyRight - shapeLeft;
+                const float rightOverlap = shapeRight - enemyLeft;
+
+                if (topOverlap >= 0 && topOverlap < bottomOverlap && topOverlap < leftOverlap && topOverlap < rightOverlap) {
+                    enemies.enemies[i].move(0, -topOverlap);
+                    enemies.enemiesVelocities[i].y = 0;
+                    //collisionSide[0] = true;
+                }
+                else if (bottomOverlap >= 0 && bottomOverlap < topOverlap && bottomOverlap < leftOverlap && bottomOverlap < rightOverlap) {
+                    enemies.enemies[i].move(0, bottomOverlap);
+                    enemies.enemiesVelocities[i].y = 0;
+                    //collisionSide[2] = true;
+                }
+                else if (leftOverlap >= 0 && leftOverlap < topOverlap && leftOverlap < bottomOverlap && leftOverlap < rightOverlap) {
+                    enemies.enemies[i].move(-leftOverlap, 0);
+                    enemies.enemiesVelocities[i].x = 0;
+                    //collisionSide[3] = true;
+                }
+                else if (rightOverlap >= 0 && rightOverlap < topOverlap && rightOverlap < bottomOverlap && rightOverlap < leftOverlap) {
+                    enemies.enemies[i].move(rightOverlap, 0);
+                    enemies.enemiesVelocities[i].x = 0;
+                    //collisionSide[1] = true;
+                }
+            }
+        }
+    }
+
+    return collisionSide;
+}
 
