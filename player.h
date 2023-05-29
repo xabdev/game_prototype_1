@@ -3,14 +3,6 @@
 #include <array>
 #include <SFML/Graphics.hpp>
 
-struct PlayerStats {
-
-
-
-
-};
-
-
 
 class Player {
 
@@ -19,24 +11,35 @@ class Player {
         std::vector<sf::RectangleShape> playerCharacter;
         sf::Vector2f velocity;
         float moveSpeed;
-        float jumpSpeed = -11.f;
+        float jumpSpeed = -10.f;
         int health;
         int attack;
+        int exp;
+        float attackCD = 0.7;
+        float attackTime = 0.01;
+        int lastVelocity = 1;
         
         bool isJumping;
         bool isOnGround;
+        bool attacking = false;
+        bool onCooldown = false;
+        
         
         std::vector<sf::RectangleShape> createPlayer();
+        std::vector<sf::RectangleShape> createPlayerWeapon();
+        void weaponAttack();
 
         std::array<bool, 4> collision;
 
 
         Player() {
-            moveSpeed = 0.9f;
+            moveSpeed = 0.7f;
             health = 100;
-            attack = 25;
+            attack = 50;
             velocity = {0, 0};
             playerCharacter = createPlayer();
+            playerCharacter = createPlayerWeapon();
+            exp = 0;
         }
 
     private:

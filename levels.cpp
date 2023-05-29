@@ -22,50 +22,7 @@ sf::Vector2f Levels::getImageDimensions(sf::Image image) {
 }
 
 
-std::vector<std::vector<int>> Levels::translateImage() {
-    sf::Image image = loadImage();
-    sf::Vector2f imageDimension = getImageDimensions(image);
-
-    float cellWidth = imageDimension.x / static_cast<float>(gridWidth);
-    float cellHeight = imageDimension.y / static_cast<float>(gridHeight);
-
-    std::vector<std::vector<int>> resultGrid(gridHeight, std::vector<int>(gridWidth));
-
-    for (int row = 0; row < gridHeight; ++row) {
-        for (int col = 0; col < gridWidth; ++col) {
-            bool hasColoredPixel = false;
-
-            // Calculate the pixel range for the current cell
-            int startX = col * cellWidth;
-            int startY = row * cellHeight;
-            int endX = static_cast<int>((col + 1) * cellWidth);
-            int endY = static_cast<int>((row + 1) * cellHeight);
-
-            // Check each pixel within the current cell range
-            for (int y = startY; y < endY; ++y) {
-                for (int x = startX; x < endX; ++x) {
-                    sf::Color pixelColor = image.getPixel(x, y);
-
-                    // Check if the pixel color is not transparent (alpha > 0)
-                    if (pixelColor.a > 0) {
-                        hasColoredPixel = true;
-                        break;
-                    }
-                }
-                if (hasColoredPixel) {
-                    break;
-                }
-            }
-
-            // Mark the corresponding cell in the result grid
-            resultGrid[row][col] = hasColoredPixel ? 1 : 0;
-        }
-    }
-
-    return resultGrid;
-}
-
-std::vector<std::vector<int>> Levels::translateImage2() {
+std::vector<std::vector<int>> Levels::image2Grid() {
     sf::Image image = loadImage();
     sf::Vector2f imageDimension = getImageDimensions(image);
 
@@ -116,7 +73,8 @@ std::vector<std::vector<int>> Levels::translateImage2() {
     return resultGrid;
 }
 
-std::vector<std::vector<sf::Color>> Levels::translateImage3() {
+
+std::vector<std::vector<sf::Color>> Levels::grid2shapes() {
     sf::Image image = loadImage();
     sf::Vector2f imageDimension = getImageDimensions(image);
 
@@ -168,12 +126,8 @@ std::vector<std::vector<sf::Color>> Levels::translateImage3() {
 }
 
 
-
-
-
-
 std::vector<sf::RectangleShape> Levels::createLevel() {
-    std::vector<std::vector<sf::Color>> resultGrid = translateImage3();
+    std::vector<std::vector<sf::Color>> resultGrid = grid2shapes();
     std::vector<sf::RectangleShape> level;
 
     for (int row = 0; row < gridHeight; ++row) {
@@ -213,189 +167,4 @@ std::vector<sf::RectangleShape> Levels::createLevel() {
     }
 
     return level;
-}
-
-
-
-
-
-
-/*
-std::vector<sf::RectangleShape> Levels::createLevel() {
-    std::vector<std::vector<int>> resultGrid = translateImage();
-    std::vector<sf::RectangleShape> level;
-
-    for (int row = 0; row < gridHeight; ++row) {
-        int startCol = 0;
-        int endCol = 0;
-
-        while (endCol < gridWidth) {
-            // Find the start and end columns of a series of adjacent marked cells
-            while (startCol < gridWidth && resultGrid[row][startCol] != 1) {
-                startCol++;
-            }
-            endCol = startCol;
-
-            bool hasAdjacentVertical = false;
-            for (int i = startCol; i < endCol; ++i) {
-                if (row > 0 && resultGrid[row - 1][i] == 1) {
-                    hasAdjacentVertical = true;
-                    break;
-                }
-            }
-
-            while (endCol < gridWidth && resultGrid[row][endCol] == 1 && !hasAdjacentVertical) {
-                endCol++;
-            }
-
-            // Create a rectangle shape for the series of adjacent cells
-            if (startCol < gridWidth && !hasAdjacentVertical) {
-                sf::RectangleShape cellShape(sf::Vector2f((endCol - startCol) * cellSize, cellSize));
-                cellShape.setOutlineThickness(2.f);
-                cellShape.setFillColor(sf::Color::Transparent);
-                cellShape.setOutlineColor(sf::Color::Magenta);
-                cellShape.setPosition(startCol * cellSize, row * cellSize);
-
-                level.push_back(cellShape);
-            }
-
-            startCol = endCol;
-        }
-    }
-
-    return level;
-}
-*/
-
-
-
-
-
-
-
-
-/*
-std::vector<sf::RectangleShape> Levels::mergeCellsToRectangles(const std::vector<std::vector<int>>& grid) {
-    int gridWidth = grid[0].size();
-    int gridHeight = grid.size();
-
-    std::vector<sf::RectangleShape> rectangles;
-
-    // Check if the grid is empty
-    if (gridWidth == 0 || gridHeight == 0) {
-        return rectangles;
-    }
-
-    std::vector<std::vector<bool>> visited(gridHeight, std::vector<bool>(gridWidth, false));
-
-    for (int row = 0; row < gridHeight; ++row) {
-        for (int col = 0; col < gridWidth; ++col) {
-            // If the cell is occupied and not visited, start forming a rectangle
-            if (grid[row][col] == 1 && !visited[row][col]) {
-                int rectWidth = 1;
-                int rectHeight = 1;
-
-                // Expand horizontally to find the width of the rectangle
-                while (col + rectWidth < gridWidth && grid[row][col + rectWidth] == 1) {
-                    ++rectWidth;
-                }
-
-                // Expand vertically to find the height of the rectangle
-                while (row + rectHeight < gridHeight) {
-                    bool validRow = true;
-                    for (int i = col; i < col + rectWidth; ++i) {
-                        if (grid[row + rectHeight][i] != 1) {
-                            validRow = false;
-                            break;
-                        }
-                    }
-                    if (validRow) {
-                        ++rectHeight;
-                    } else {
-                        break;
-                    }
-                }
-
-                // Create the rectangle shape
-                sf::RectangleShape rectangle(sf::Vector2f(rectWidth * cellSize, rectHeight * cellSize));
-                rectangle.setFillColor(sf::Color::Blue);
-                rectangle.setPosition(col * cellSize, row * cellSize);
-
-                // Mark the cells as visited
-                for (int i = row; i < row + rectHeight; ++i) {
-                    for (int j = col; j < col + rectWidth; ++j) {
-                        visited[i][j] = true;
-                    }
-                }
-
-                // Add the rectangle shape to the vector
-                rectangles.push_back(rectangle);
-            }
-        }
-    }
-
-    return rectangles;
-}
-*/
-
-std::vector<sf::RectangleShape> Levels::createRectangles(const std::vector<std::vector<int>>& resultGrid) {
-    int gridWidth = resultGrid[0].size();
-    int gridHeight = resultGrid.size();
-
-    std::vector<sf::RectangleShape> rectangles;
-
-    // Check if the grid is empty
-    if (gridWidth == 0 || gridHeight == 0) {
-        return rectangles;
-    }
-
-    std::vector<std::vector<bool>> visited(gridHeight, std::vector<bool>(gridWidth, false));
-
-    for (int row = 0; row < gridHeight; ++row) {
-        for (int col = 0; col < gridWidth; ++col) {
-            // If the cell is occupied and not visited, start forming a rectangle
-            if (resultGrid[row][col] == 1 && !visited[row][col]) {
-                int rectWidth = 1;
-                int rectHeight = 1;
-
-                // Expand horizontally to find the width of the rectangle
-                while (col + rectWidth < gridWidth && resultGrid[row][col + rectWidth] == 1) {
-                    ++rectWidth;
-                }
-
-                // Expand vertically to find the height of the rectangle
-                while (row + rectHeight < gridHeight) {
-                    bool validRow = true;
-                    for (int i = col; i < col + rectWidth; ++i) {
-                        if (resultGrid[row + rectHeight][i] != 1) {
-                            validRow = false;
-                            break;
-                        }
-                    }
-                    if (validRow) {
-                        ++rectHeight;
-                    } else {
-                        break;
-                    }
-                }
-
-                // Create the rectangle shape
-                sf::RectangleShape rectangle(sf::Vector2f(rectWidth * cellSize, rectHeight * cellSize));
-                rectangle.setFillColor(sf::Color::Blue);
-                rectangle.setPosition(col * cellSize, row * cellSize);
-
-                // Mark the cells as visited
-                for (int i = row; i < row + rectHeight; ++i) {
-                    for (int j = col; j < col + rectWidth; ++j) {
-                        visited[i][j] = true;
-                    }
-                }
-
-                // Add the rectangle shape to the vector
-                rectangles.push_back(rectangle);
-            }
-        }
-    }
-
-    return rectangles;
 }

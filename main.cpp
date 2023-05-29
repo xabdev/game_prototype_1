@@ -52,11 +52,7 @@ int main() {
    Logic logic(player, enemies);
    Graphics graphics(logic, player, enemies);
    sf::View view;
-   logic.preCalculatePlatformPositions();
-    //for (const sf::FloatRect& rect : logic.platformBounds) {
-     //   std::cout << "Left: " << rect.left << ", Top: " << rect.top << ", Width: " << rect.width << ", Height: " << rect.height << std::endl;
-   // }
-   //runLogicTests();
+   //logic.preCalculatePlatformPositions();
 
 
     
@@ -65,18 +61,9 @@ int main() {
         
         handleEvents(window);
                 
-        logic.gravityZ(); 
-        logic.updateEnemyVelocity();               
-        logic.vJoy();
-        
-        
+        logic.logicMain();
 
-
-        
-        //std::cout << logic.getPlayerCell().x << " " << logic.getPlayerCell().y << "\n";
-
-        graphics.render(window);
-        graphics.cameraView(window, view);
+        graphics.graphicsMain(window, view);
 
     }
 

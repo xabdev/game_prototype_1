@@ -3,20 +3,33 @@
 
 Logic::Logic(Player& player, Enemies& enemies) : gridmanager(gridWidth, gridHeight), player(player), enemies(enemies) {
     // Constructor initialization list, initializes the reference member
+    preCalculatePlatformPositions();
 
 }
 
 void Logic::gravityZ() {
     const float Gravity = 0.9f;
-    player.velocity.y += Gravity;
-    for (auto& element : enemies.enemiesVelocities) {
-        element.y += Gravity;
-    }
-    //player.playerCharacter[0].move(player.velocity);
+    player.velocity.y += Gravity; 
+    player.playerCharacter[0].move(player.velocity);
 
+
+    for (size_t i = 0; i < enemies.enemies.size(); i++) {
+        if (enemies.enemies[i].getPosition().x != -200) {
+            enemies.enemiesVelocities[i].y += Gravity;
+            enemies.enemies[i].move(enemies.enemiesVelocities[i]);
+            
+        }
+    }
 }
 
 
+float randNum(float start, float end) {
+  static std::random_device rd;
+  static std::mt19937 engine(rd());
+  std::uniform_real_distribution<float> dist(start, end);
+  float rand = dist(engine);
+  return rand;
+}
 
 
 void Logic::vJoy() {
@@ -35,10 +48,6 @@ void Logic::vJoy() {
         player.velocity.x -= player.moveSpeed;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
         player.velocity.x += player.moveSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-        player.velocity.y -= player.moveSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-        player.velocity.y += player.moveSpeed;
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         if (!player.isJumping && player.isOnGround) {
             // Start jumping
@@ -46,43 +55,90 @@ void Logic::vJoy() {
             player.velocity.y = player.jumpSpeed;
         } else { player.isJumping = false; }
     }
-    
-    
-    
-    
-    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad7)) {
+        player.weaponAttack();
+    }
+
     updatePlayerVelocity();
-    
-    
-    
-    
+    //Position player weapon
+    player.playerCharacter[1].setPosition(player.playerCharacter[0].getPosition().x + player.playerCharacter[0].getSize().x / 2, player.playerCharacter[0].getPosition().y + 30);
+
+}
+
+
+void Logic::debugKeys() {
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
+        std::cout << player.playerCharacter[0].getPosition().x << "\n";
+
 }
 
 
 void Logic::updatePlayerVelocity() {
     // Apply drag to the player's velocity
+
     player.velocity.x *= 0.75;
     player.playerCharacter[0].move(player.velocity);
-    //gravityZ();
+
     limitPlayerMovementToGrid();
     player.collision = collisionSide(platformBounds);
-    
 }
 
-void Logic::updateEnemyVelocity() {
 
-    const float Gravity = 0.9f;
-     for (int i = 0; i < enemies.enemies.size(); i++) {
-        enemies.enemiesVelocities[i].y += Gravity;
-        enemies.enemiesVelocities[i].x *= 0.75;
-        enemies.enemies[i].move(enemies.enemiesVelocities[i]);
+void Logic::playerDamaged() {
 
+    for (size_t i = 0; i < enemies.enemies.size(); ++i) {
+        if (player.playerCharacter[0].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
+            player.health -= 1;
+            std::cout << "YOU GOT HIT! " << player.health << "\n";
+            
+            
+            sf::Vector2f pushDirection = player.playerCharacter[1].getPosition() - enemies.enemies[i].getPosition();
+            pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
+            float pushForce = 5.0f; // Modify this as per your requirements
+
+            player.playerCharacter[0].move(pushDirection * pushForce);
+            
+            
+            if (player.health < 0) {
+                player.playerCharacter[0].setPosition(1600, 0);
+                //enemies.enemies.clear();
+                //enemies.enemiesVelocities.clear(); 
+                //enemies.enemiesHealth.clear();
+                //enemies.restartEnemies();
+                player.health += 100;
+
+                //play = false;
+            }
+
+        }
     }
-    collisionSideEnemy(platformBounds);
-
 }
 
+void Logic::weaponCollision() {
 
+        for (size_t i = 0; i < enemies.enemies.size(); ++i) {
+        if (player.playerCharacter[1].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
+
+            //std::cout << "Enemy Number: " << i << " Enemy Health: " << enemies.enemiesHealth[i] << "\n";
+            enemies.enemiesHealth[i] -= player.attack;
+            //std::cout << "Enemy Number: " << i << " Enemy Health: " << enemies.enemiesHealth[i] << "\n";
+            if (enemies.enemiesHealth[i] <= 0) {
+                enemies.enemies[i].setPosition(-200, 0);
+                enemies.enemiesHealth[i] = 100;
+                //levelUP(50);
+                std::cout << player.exp << "\n";
+            }
+
+            sf::Vector2f pushDirection = enemies.enemies[i].getPosition() - player.playerCharacter[1].getPosition();
+            pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
+            float pushForce = 50.0f; // Modify this as per your requirements
+            //std::cout << "push direction: " << pushDirection.x << " " << pushDirection.y << "\n";
+
+            enemies.enemies[i].move(pushDirection * pushForce);
+        }
+    }
+}
 
 
 void Logic::limitPlayerMovementToGrid() {
@@ -90,8 +146,8 @@ void Logic::limitPlayerMovementToGrid() {
     sf::Vector2f newPosition = pos + player.velocity;
 
     // Adjust the movement if it exceeds the grid boundaries
-    if (newPosition.x < 0)
-        newPosition.x = 0;
+    if (newPosition.x < 1500)
+        newPosition.x = 1500;
     if (newPosition.x + player.playerCharacter[0].getSize().x > gridWidth * cellSize) {
         // Use pre-defined maximum X position
         float maxX = gridWidth * cellSize - player.playerCharacter[0].getSize().x;
@@ -133,10 +189,6 @@ void Logic::limitPlayerMovementToGrid() {
 }
 
 
-
-
-
-
 sf::Vector2i Logic::getPlayerCell() const {
     sf::Vector2f playerPosition = player.playerCharacter[0].getPosition();
     int cellX = static_cast<int>(playerPosition.x) / cellSize;
@@ -146,15 +198,12 @@ sf::Vector2i Logic::getPlayerCell() const {
 
 
 
-void Logic::preCalculatePlatformPositions()
-{
+void Logic::preCalculatePlatformPositions() {
     for (const sf::RectangleShape& platform : levels.level) {
         sf::FloatRect platformRect = platform.getGlobalBounds();
         platformBounds.push_back(platformRect);
     }
 }
-
-
 
 
 std::array<bool, 4> Logic::collisionSide(const std::vector<sf::FloatRect>& platformBounds) {
@@ -179,6 +228,7 @@ std::array<bool, 4> Logic::collisionSide(const std::vector<sf::FloatRect>& platf
             const float bottomOverlap = shapeBottom - playerTop;
             const float leftOverlap = playerRight - shapeLeft;
             const float rightOverlap = shapeRight - playerLeft;
+
 
             if (topOverlap >= 0 && topOverlap < bottomOverlap && topOverlap < leftOverlap && topOverlap < rightOverlap) {
                 player.playerCharacter[0].move(0, -topOverlap);
@@ -206,59 +256,199 @@ std::array<bool, 4> Logic::collisionSide(const std::vector<sf::FloatRect>& platf
     return collisionSide;
 }
 
-std::array<bool, 4> Logic::collisionSideEnemy(const std::vector<sf::FloatRect>& platformBounds) {
-    std::array<bool, 4> collisionSide{ false, false, false, false };
+
+sf::Vector2f Logic::calculateDistances(int enemyIndex, const sf::FloatRect& platformBounds) {
+    sf::Vector2f distances; // distances.x for right edge, distances.y for left edge
+    const sf::RectangleShape& enemy = enemies.enemies[enemyIndex];
+    // Calculate bottom center position of the enemy
+    sf::Vector2f enemyBottomCenter(enemy.getPosition().x + enemy.getSize().x / 2.f, enemy.getPosition().y + enemy.getSize().y);
+    // Calculate distance from right edge
+    distances.x = platformBounds.left + platformBounds.width - enemyBottomCenter.x;
+    // Calculate distance from left edge
+    distances.y = enemyBottomCenter.x - platformBounds.left;
+    //std::cout << "X: " << distances.x << " Y: " << distances.y << "\n";
+    return distances;
+}
 
 
-    //for (const auto& elementBounds : platformBounds) {
-        for (int i = 0; i < enemies.enemies.size(); i++) {
-            const sf::FloatRect enemyBounds = enemies.enemies[i].getGlobalBounds();
-            const sf::Vector2f enemyPosition = enemies.enemies[i].getPosition();
-            const sf::Vector2f enemySize = enemies.enemies[i].getSize();
+void Logic::enemyJump(int index) {
 
-            for (auto& element : platformBounds) {
+    float jumpPower = -13.5f;
+
+    enemies.enemiesVelocities[index].y = jumpPower;
+}
 
 
-            if (enemyBounds.intersects(element)) {
-                const float enemyTop = enemyPosition.y;
-                const float enemyBottom = enemyPosition.y + enemySize.y;
-                const float enemyLeft = enemyPosition.x;
-                const float enemyRight = enemyPosition.x + enemySize.x;
+std::vector<std::vector<bool>> Logic::enemyCollisionSide() {
+    std::vector<std::vector<bool>> collisionSide(enemies.enemies.size(), std::vector<bool>(4, false));
+    
+    for (int i = 0; i < enemies.enemies.size(); i++) {
 
-                const float shapeTop = element.top;
-                const float shapeBottom = element.top + element.height;
-                const float shapeLeft = element.left;
-                const float shapeRight = element.left + element.width;
+        for (auto& platform : platformBounds) {
+                float shapeTop = platform.top;
+                float shapeBottom = platform.top + platform.height;
+                float shapeLeft = platform.left;
+                float shapeRight = platform.left + platform.width;
+            
+            if (enemies.enemies[i].getGlobalBounds().intersects(platform)) {
+                float enemyTop = enemies.enemies[i].getPosition().y;
+                float enemyBottom = enemies.enemies[i].getPosition().y + enemies.enemies[i].getSize().y;
+                float enemyLeft = enemies.enemies[i].getPosition().x;
+                float enemyRight = enemies.enemies[i].getPosition().x + enemies.enemies[i].getSize().x;
 
-                const float topOverlap = enemyBottom - shapeTop;
-                const float bottomOverlap = shapeBottom - enemyTop;
-                const float leftOverlap = enemyRight - shapeLeft;
-                const float rightOverlap = shapeRight - enemyLeft;
+                float topOverlap = enemyBottom - shapeTop;
+                float bottomOverlap = shapeBottom - enemyTop;
+                float leftOverlap = enemyRight - shapeLeft;
+                float rightOverlap = shapeRight - enemyLeft;
 
-                if (topOverlap >= 0 && topOverlap < bottomOverlap && topOverlap < leftOverlap && topOverlap < rightOverlap) {
-                    enemies.enemies[i].move(0, -topOverlap);
-                    enemies.enemiesVelocities[i].y = 0;
-                    //collisionSide[0] = true;
-                }
-                else if (bottomOverlap >= 0 && bottomOverlap < topOverlap && bottomOverlap < leftOverlap && bottomOverlap < rightOverlap) {
-                    enemies.enemies[i].move(0, bottomOverlap);
-                    enemies.enemiesVelocities[i].y = 0;
-                    //collisionSide[2] = true;
-                }
-                else if (leftOverlap >= 0 && leftOverlap < topOverlap && leftOverlap < bottomOverlap && leftOverlap < rightOverlap) {
-                    enemies.enemies[i].move(-leftOverlap, 0);
-                    enemies.enemiesVelocities[i].x = 0;
-                    //collisionSide[3] = true;
-                }
-                else if (rightOverlap >= 0 && rightOverlap < topOverlap && rightOverlap < bottomOverlap && rightOverlap < leftOverlap) {
-                    enemies.enemies[i].move(rightOverlap, 0);
-                    enemies.enemiesVelocities[i].x = 0;
-                    //collisionSide[1] = true;
+                if (std::min({ topOverlap, bottomOverlap, leftOverlap, rightOverlap }) > 0.f) {
+                    if (topOverlap < bottomOverlap && topOverlap < leftOverlap && topOverlap < rightOverlap) {
+                        //Tocando el piso
+                        enemies.enemies[i].setPosition(enemies.enemies[i].getPosition().x, shapeTop - enemies.enemies[i].getSize().y);
+                        enemies.enemiesVelocities[i].y = 0;
+                        collisionSide[i][2] = true;
+                        
+                        sf::Vector2f edge = calculateDistances(i, platform);
+                        if (edge.x < 0.f) {
+                            enemyJump(i);
+                        }
+                        if (edge.y < 0.f) {
+                            enemyJump(i);
+                        }
+
+                    } else if (bottomOverlap < topOverlap && bottomOverlap < leftOverlap && bottomOverlap < rightOverlap) {
+                        //Tocando el techo
+                        enemies.enemies[i].setPosition(enemies.enemies[i].getPosition().x, shapeBottom);
+                        enemies.enemiesVelocities[i].y = 0;
+                        collisionSide[i][0] = true; 
+
+                    } else if (leftOverlap < topOverlap && leftOverlap < bottomOverlap && leftOverlap < rightOverlap) {
+                        //Tocando la derecha
+                        enemies.enemies[i].setPosition(shapeLeft - enemies.enemies[i].getSize().x, enemies.enemies[i].getPosition().y);
+                        //shapeVelocities[i].x = 0;
+                        collisionSide[i][3] = true;
+
+                    } else if (rightOverlap < topOverlap && rightOverlap < bottomOverlap && rightOverlap < leftOverlap) {
+                        //Tocando la izquierda
+                        enemies.enemies[i].setPosition(shapeRight, enemies.enemies[i].getPosition().y);
+                        //shapeVelocities[i].x = 0;
+                        collisionSide[i][1] = true;
+                    }
                 }
             }
         }
     }
-
     return collisionSide;
 }
 
+
+void Logic::enemiesRespawner() {
+    static sf::Clock timer;
+    static sf::Clock decreaseTimer;
+    sf::Time elapsed = timer.getElapsedTime();
+    sf::Time decreaseElapsed = decreaseTimer.getElapsedTime();
+    static int respawn;
+    static float respawn_time = 5.0f;
+    static bool spawnRight = true;
+
+    if (respawn < enemies.enemies.size() - 5) {
+
+        if (elapsed.asSeconds() > respawn_time) { 
+            // Check if player's position is less than 700
+            /*if (player.playerCharacter[0].getPosition().x < 1200) {
+                spawnRight = true; // Always spawn from the right
+            }*/
+            if (player.playerCharacter[0].getPosition().x > 11500) {
+                spawnRight = false; // Always spawn from the left
+            }
+
+            // Calculate the position offset based on the spawn direction
+            float offsetX = spawnRight ? 1100.0f : -1100.0f;
+
+            float offsetY = player.playerCharacter[0].getPosition().y - enemies.enemies[0].getSize().y;
+
+
+            offsetX += randNum(0.f, 150.f);
+            enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
+            respawn++;
+            /*offsetX += randNum(0.f, 150.f);
+            enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
+            respawn++;
+            offsetX += randNum(0.f, 150.f);
+            enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
+            respawn++;*/
+
+            timer.restart();
+
+            // Toggle the spawn direction for the next enemy
+            spawnRight = !spawnRight;
+        }
+
+        if (decreaseElapsed.asSeconds() > 15.0f && respawn_time > 0.5) {
+            respawn_time -= 0.50f;
+            std::cout << respawn_time << "\n";
+            decreaseTimer.restart();
+        }
+    }
+}
+
+
+sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
+
+    const float enemyRange = 2000.0f;
+    sf::Vector2f enemyToPlayer = player.playerCharacter[0].getPosition() - enemies.enemies[index].getPosition();
+        float distance = std::hypot(enemyToPlayer.x, enemyToPlayer.y);
+        if (distance <= enemyRange && std::abs(enemyToPlayer.y) <= enemyRange) {
+            enemyToPlayer /= distance;
+
+            // Update only the X component of the enemy velocity based on the player's position
+            enemies.enemiesVelocities[index].x = enemyToPlayer.x * enemies.enemyTopSpeed;
+        }
+        if (enemies.enemiesHealth[index] <= 50) {
+                enemies.enemiesVelocities[index].y = enemies.enemyJumpSpeed;
+            }
+            if (enemies.enemiesHealth[index] <= 25) {
+                enemies.enemiesVelocities[index].x = enemyToPlayer.x * enemies.enemyAlmostDeadSpeed;
+            }
+    return enemyToPlayer;
+}
+
+
+void Logic::enemiesAI() {
+    enemies.collision = enemyCollisionSide();
+    weaponCollision();
+
+    for (size_t i = 0; i < enemies.collision.size(); i++) {
+
+        if (enemies.collision[i][2]) {
+            //std::cout << "Enemy: " << i << " touching floor " << enemies.collision[i][2] << "\n";
+            locatePlayerWithIndexV2(i);
+
+        }
+        if (enemies.collision[i][3]) {
+            enemyJump(i);
+            //std::cout << "Enemy: " << i << " tocando la derecha " << enemies.collision[i][3] << std::endl;
+        }
+        if (enemies.collision[i][1]) {
+            enemyJump(i);
+
+            //std::cout << "Enemy: " << i << " tocando la izquierda " << enemies.collision[i][1] << std::endl;
+        }
+        
+    }
+}
+
+
+void Logic::logicMain() {
+
+    enemiesRespawner();
+
+    gravityZ();
+
+    enemiesAI();
+    playerDamaged();
+    
+    
+    vJoy();
+    debugKeys();
+}

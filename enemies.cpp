@@ -21,11 +21,11 @@ std::vector<int> Enemies::setEnemiesHealth() {
 std::vector<sf::RectangleShape> Enemies::createEnemies() {
     sf::RectangleShape enemy;
     for (int i = 0; i < numEnemies; i++) {
-        enemy.setSize(sf::Vector2f(30, 80));
+        enemy.setSize(sf::Vector2f(50, 110));
         enemy.setFillColor(sf::Color::Red);
         enemy.setOutlineColor(sf::Color::Black);
         enemy.setOutlineThickness(1.0f);
-        enemy.setPosition(200, 200);
+        enemy.setPosition(-200, 200);
         enemies.push_back(enemy);
     }
     return enemies;

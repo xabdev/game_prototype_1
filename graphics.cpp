@@ -2,7 +2,13 @@
 
 
 Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies) : logic(logic), player(player), enemies(enemies) {
+
+    playerTexture = loadTexture("img/player.png");
+    playerWeaponTexture = loadTexture("img/weapon.png");
+    createPlayerSprite();
+    createWeaponSprite();
     
+
 }
 
 
@@ -33,6 +39,8 @@ void Graphics::render(sf::RenderWindow& window) {
         window.draw(element);
     }
  
+    window.draw(playerSprite);
+
     window.display();
 }
 
@@ -67,7 +75,10 @@ void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
 
     // Calculate the camera bounds based on the grid
     
-    float cameraLeftEdge = scaledWidth / 2.0f;
+    // Modification for enemy respawner
+    //float cameraLeftEdge = scaledWidth / 2.0f;
+    float cameraLeftEdge = (scaledWidth / 2.0f) + 1500;
+    
     float cameraRightEdge = (logic.gridWidth * logic.cellSize) - (scaledWidth / 2.0f);
 
     // Adjust the camera position if the player reaches the edges
@@ -81,4 +92,138 @@ void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
     //view.setCenter(playerX, playerY);
 
     window.setView(view);
+}
+
+
+sf::Texture Graphics::loadTexture(std::string filename) {
+
+    sf::Texture texture;
+    if (!texture.loadFromFile(filename)) {
+        //error
+    }
+    return texture;
+}
+
+void Graphics::createPlayerSprite() {
+    playerSprite.setTexture(playerTexture);
+    playerSprite.setPosition(2500, 300);
+}
+
+
+void Graphics::createWeaponSprite() {
+    playerWeaponSprite.setTexture(playerWeaponTexture);
+    playerWeaponSprite.setPosition(2500, 300);
+}
+
+
+void Graphics::updateSpritesPosition() {
+
+    playerSprite.setPosition(player.playerCharacter[0].getPosition());
+
+}
+
+
+void Graphics::animatePlayerSprite() {
+    static sf::Clock timer;
+    //static int frameCount;
+    float animationSpeed = 0.1f;
+
+    sf::IntRect idle(0, 0, 76, 136);
+    sf::IntRect walk1(76, 0, 77, 136);
+    sf::IntRect walk2(153, 0, 76, 136);
+    sf::IntRect walk3(229, 0, 75, 136);
+
+
+    // Define the duration of each frame in seconds
+    const float FRAME_DURATION = 0.1f;
+
+    sf::IntRect idleFrames[] = { idle };
+    const int NUM_IDLE_FRAMES = sizeof(idleFrames) / sizeof(idleFrames[0]);
+
+    sf::IntRect walkFrames[] = { walk1, walk2, walk3 };
+    const int NUM_WALKING_FRAMES = sizeof(walkFrames) / sizeof(walkFrames[0]);
+
+    // Determine which set of frames to use based on the velocity
+    sf::IntRect* frames;
+    int numFrames;
+
+    if (std::abs(player.velocity.x) > 0.3) {
+        frames = walkFrames;
+        numFrames = NUM_WALKING_FRAMES;
+    } else {
+        frames = idleFrames;
+        numFrames = NUM_IDLE_FRAMES;
+    }
+
+
+    // Update the current frame based on the elapsed time
+    int currentFrame = static_cast<int>((timer.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
+
+    // Set the texture rect based on the current frame
+    playerSprite.setTextureRect(frames[currentFrame]);
+
+
+    if (player.velocity.x > 0) { 
+        playerSprite.setScale(-1, 1);
+        playerSprite.setOrigin(playerSprite.getLocalBounds().width, 0.f); // set origin to right edge
+
+    } else {
+        playerSprite.setScale(1, 1);
+        playerSprite.setOrigin(0.f, 0.f);
+    }
+
+    // Set sprite to the player position
+    playerSprite.setPosition(player.playerCharacter[0].getPosition().x, player.playerCharacter[0].getPosition().y);
+
+}
+
+void Graphics::animateWeapon() {
+
+    static sf::Clock weaponTimer;
+    //static int weaponFrameCount;
+    float animationSpeed = 0.1f;
+
+    sf::IntRect attack1(305, 0, 24, 86);
+    sf::IntRect attack2(329, 0, 51, 56);
+    sf::IntRect attack3(380, 0, 73, 15);
+
+    // Define the duration of each frame in seconds
+    const float FRAME_DURATION = 0.1f;
+
+
+    sf::IntRect attackFrames[] = { attack1, attack2, attack3};
+    const int NUM_ATTACKING_FRAMES = sizeof(attackFrames) / sizeof(attackFrames[0]);
+
+    // Determine which set of frames to use based on the velocity
+    sf::IntRect* frames;
+    int numFrames;
+
+    if (player.attacking) {
+        frames = attackFrames;
+        numFrames = NUM_ATTACKING_FRAMES;
+    }
+
+    // Update the current frame based on the elapsed time
+    int currentFrame = static_cast<int>((weaponTimer.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
+
+    // Set the texture rect based on the current frame
+    if (player.attacking) {
+        playerWeaponSprite.setTextureRect(frames[currentFrame]);
+    }
+    playerWeaponSprite.setPosition(player.playerCharacter[0].getPosition().x, player.playerCharacter[0].getPosition().y);
+
+}
+
+
+
+
+void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
+    
+    //updateSpritesPosition();
+    animatePlayerSprite();
+    animateWeapon();
+    cameraView(window, view);
+    render(window);
+    
+
 }

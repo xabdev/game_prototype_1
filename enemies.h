@@ -9,24 +9,27 @@ class Enemies {
         std::vector<int> setEnemiesHealth();
         void restartEnemies();
         std::vector<sf::RectangleShape> enemies;
-        std::vector<std::vector<bool>> collision;
-        std::vector<std::vector<bool>> collisionWithSelf;
         std::vector<sf::Vector2f> enemiesVelocities;
         std::vector<int> enemiesHealth;
-        const float enemyTopSpeed = 1.5f;
-        const float enemyAlmostDeadSpeed = 3.f;
-        const float enemyJumpSpeed = -12.0f;
+        std::vector<std::vector<bool>> collision;
+        
+        const float enemyTopSpeed = 2.5f;
+        const float enemyAlmostDeadSpeed = 5.f;
+        const float enemyJumpSpeed = -8.5f;
+        
+        
 
         Enemies() {
             enemies = createEnemies();
             enemiesVelocities = setEnemiesVelocity();
             enemiesHealth = setEnemiesHealth();
+            
         }
 
 
 
     private:
-        int numEnemies = 2;
+        int numEnemies = 100;
         int enemyHealth = 100;
 
 

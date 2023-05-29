@@ -15,12 +15,21 @@ class Graphics {
 
         void render(sf::RenderWindow& window);
         void cameraView(sf::RenderWindow& window, sf::View& view);
-        sf::Image loadImage();
-        sf::Vector2f getImageDimensions(sf::Image image);
-        std::vector<std::vector<int>> translateImage();
+        void graphicsMain(sf::RenderWindow& window, sf::View& view);
+        void updateSpritesPosition();
+        void animatePlayerSprite();
+        void animateWeapon();
+
+        sf::Texture loadTexture(std::string filename);
+
+        void createPlayerSprite();
+        void createWeaponSprite();
 
 
-
+        sf::Sprite playerSprite;
+        sf::Texture playerTexture;
+        sf::Sprite playerWeaponSprite;
+        sf::Texture playerWeaponTexture;
 
 
 
