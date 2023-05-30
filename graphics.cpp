@@ -4,9 +4,15 @@
 Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies) : logic(logic), player(player), enemies(enemies) {
 
     playerTexture = loadTexture("img/player.png");
-    playerWeaponTexture = loadTexture("img/weapon.png");
     createPlayerSprite();
-    createWeaponSprite();
+    enemyTexture = loadTexture("img/gorito.png");
+    createEnemySprites();
+    cellTexture = loadTexture("img/cell.png");
+    blockTexture = loadTexture("img/block.png");
+    createLevelSprites();
+    background1Texture = loadTexture("img/background1.png");
+    createBackgroundSprite();
+
     
 
 }
@@ -14,9 +20,9 @@ Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies) : logic(logic
 
 void Graphics::render(sf::RenderWindow& window) {
 
-    window.clear(sf::Color(0, 0, 0));
+    window.clear(sf::Color(0, 0, 171));
     
-    for (int row = 0; row < logic.gridHeight; ++row) {
+    /*for (int row = 0; row < logic.gridHeight; ++row) {
         for (int col = 0; col < logic.gridWidth; ++col) {
         // Calculate the position of each grid cell based on the cell size
         sf::RectangleShape cell(sf::Vector2f(logic.cellSize, logic.cellSize));
@@ -27,14 +33,30 @@ void Graphics::render(sf::RenderWindow& window) {
 
         window.draw(cell);
         }
-    }
+    }*/
        
-    for (auto& element : levels.level) {
-        window.draw(element);
-    }
+    window.draw(background1);
+
+    
     for (auto& element : enemies.enemies) {
         window.draw(element);
     }
+
+
+
+    /*for (auto& element : levels.levelShapes) {
+        window.draw(element);
+    }*/
+    
+    for (auto& element : enemySprites) {
+        window.draw(element);
+    }
+
+    for (auto& element : cellSprites) {
+        window.draw(element);
+    }
+
+
     for (auto& element : player.playerCharacter) {
         window.draw(element);
     }
@@ -106,32 +128,82 @@ sf::Texture Graphics::loadTexture(std::string filename) {
 
 void Graphics::createPlayerSprite() {
     playerSprite.setTexture(playerTexture);
-    playerSprite.setPosition(2500, 300);
+    //playerSprite.setPosition(2500, 300);
+}
+
+void Graphics::createBackgroundSprite() {
+    background1.setTexture(background1Texture);
+    background1.setPosition(1500, 120);
+    background1.setScale(3, 3);
 }
 
 
-void Graphics::createWeaponSprite() {
-    playerWeaponSprite.setTexture(playerWeaponTexture);
-    playerWeaponSprite.setPosition(2500, 300);
+void Graphics::createEnemySprites() {
+
+    sf::Sprite enemySprite;
+    for (int i = 0; i < enemies.enemies.size(); i++){
+        enemySprite.setTexture(enemyTexture);
+        enemySprites.push_back(enemySprite);
+    }
+}
+
+void Graphics::createLevelSprites() {
+
+    sf::Color ground = {29, 148, 82, 255 };
+    sf::Color block = { 255, 0, 0, 255 };
+
+    sf::Sprite cellSprite;
+    sf::Color color;
+    for (auto& element : levels.levelShapes) {
+
+        color = element.getFillColor();
+
+        if (color == ground) {
+            cellSprite.setTexture(cellTexture);
+            cellSprites.push_back(cellSprite);
+        }
+        if (color == block) {
+            cellSprite.setTexture(blockTexture);
+            cellSprites.push_back(cellSprite);
+        }
+    }
 }
 
 
-void Graphics::updateSpritesPosition() {
 
-    playerSprite.setPosition(player.playerCharacter[0].getPosition());
+
+
+void Graphics::updateBGSpritePosition() {
+    
+    float x = background1.getPosition().x;
+    std::cout << player.velocity.x << "\n";
+
+    if (player.velocity.x > 1.f) {
+        x -= 0.5;
+        background1.setPosition(x, background1.getPosition().y);
+    }
+    if (player.velocity.x < 1.f) {
+        x += 0.5;
+        background1.setPosition(x, background1.getPosition().y);
+    }
 
 }
+
+
 
 
 void Graphics::animatePlayerSprite() {
+
     static sf::Clock timer;
-    //static int frameCount;
-    float animationSpeed = 0.1f;
 
     sf::IntRect idle(0, 0, 76, 136);
     sf::IntRect walk1(76, 0, 77, 136);
     sf::IntRect walk2(153, 0, 76, 136);
     sf::IntRect walk3(229, 0, 75, 136);
+    sf::IntRect jump(304, 0, 72, 136);
+    sf::IntRect attack1(376, 0, 106, 136);
+    sf::IntRect attack2(482, 0, 74, 136);
+    sf::IntRect attack3(556, 0, 108, 136);
 
 
     // Define the duration of each frame in seconds
@@ -142,6 +214,13 @@ void Graphics::animatePlayerSprite() {
 
     sf::IntRect walkFrames[] = { walk1, walk2, walk3 };
     const int NUM_WALKING_FRAMES = sizeof(walkFrames) / sizeof(walkFrames[0]);
+
+    sf::IntRect jumpFrames[] = { jump };
+    const int NUM_JUMP_FRAMES = sizeof(jumpFrames) / sizeof(jumpFrames[0]);
+
+    sf::IntRect attackFrames[] = {attack1, attack2, attack3};
+    const int NUM_ATTACK_FRAMES = sizeof(attackFrames) / sizeof(attackFrames[0]);
+
 
     // Determine which set of frames to use based on the velocity
     sf::IntRect* frames;
@@ -155,6 +234,15 @@ void Graphics::animatePlayerSprite() {
         numFrames = NUM_IDLE_FRAMES;
     }
 
+    if (player.velocity.y != 0) {
+        frames = jumpFrames;
+        numFrames = NUM_JUMP_FRAMES;
+    }
+
+    if (player.attackAnimation) {
+        frames = attackFrames;
+        numFrames = NUM_ATTACK_FRAMES;
+    }
 
     // Update the current frame based on the elapsed time
     int currentFrame = static_cast<int>((timer.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
@@ -175,53 +263,98 @@ void Graphics::animatePlayerSprite() {
     // Set sprite to the player position
     playerSprite.setPosition(player.playerCharacter[0].getPosition().x, player.playerCharacter[0].getPosition().y);
 
+    if (player.attackTiming.getElapsedTime().asSeconds() > 0.033) {
+        player.attackAnimation = false;
+    }
 }
 
-void Graphics::animateWeapon() {
+void Graphics::animateLevelSprites() {
 
-    static sf::Clock weaponTimer;
-    //static int weaponFrameCount;
-    float animationSpeed = 0.1f;
+    sf::Color ground = {29, 148, 82, 255 };
+    sf::Color block = { 255, 0, 0, 255 };
+    sf::Color color;
 
-    sf::IntRect attack1(305, 0, 24, 86);
-    sf::IntRect attack2(329, 0, 51, 56);
-    sf::IntRect attack3(380, 0, 73, 15);
+    for (int i = 0; i < cellSprites.size(); i++) {
+        
+        color = levels.levelShapes[i].getFillColor();
+        if (color == ground) {
+            cellSprites[i].setPosition(levels.levelShapes[i].getPosition().x, levels.levelShapes[i].getPosition().y);
+        }
+        if (color == block) {
+            cellSprites[i].setPosition(levels.levelShapes[i].getPosition().x, levels.levelShapes[i].getPosition().y);
+        }
+    }
+
+}
+
+
+void Graphics::animateEnemySprites() {
+
+    static sf::Clock timerEnemy;
+    static int frameCount;
+    //const float animationSpeed = 0.01f; // 
+
+
+    sf::IntRect goroWalking1(0, 0, 62, 120);
+    sf::IntRect goroWalking2(62, 0, 63, 120);
+    sf::IntRect goroWalking3(125, 0, 59, 120);
+    sf::IntRect goroWalking4(184, 0, 63, 120);
+    sf::IntRect goroWalking5(247, 0, 66, 120);
+    sf::IntRect goroWalking6(313, 0, 61, 120);
+    sf::IntRect goroWalking7(374, 0, 62, 120);
+    sf::IntRect goroWalking8(436, 0, 63, 120);
+    sf::IntRect goroWalking9(499, 0, 65, 120);
+
 
     // Define the duration of each frame in seconds
-    const float FRAME_DURATION = 0.1f;
+    const float FRAME_DURATION = 0.07f;
 
+    // Define the animation frames for the walking animation
+    sf::IntRect walkingFrames[] = {
+        goroWalking1,
+        goroWalking2,
+        goroWalking3,
+        goroWalking4,
+        goroWalking5,
+        goroWalking6,
+        goroWalking7,
+        goroWalking8,
+        goroWalking9
+    };
+    const int NUM_WALKING_FRAMES = sizeof(walkingFrames) / sizeof(walkingFrames[0]);
 
-    sf::IntRect attackFrames[] = { attack1, attack2, attack3};
-    const int NUM_ATTACKING_FRAMES = sizeof(attackFrames) / sizeof(attackFrames[0]);
-
-    // Determine which set of frames to use based on the velocity
-    sf::IntRect* frames;
+    sf::IntRect* frames = walkingFrames;
     int numFrames;
-
-    if (player.attacking) {
-        frames = attackFrames;
-        numFrames = NUM_ATTACKING_FRAMES;
-    }
+    numFrames = NUM_WALKING_FRAMES;
 
     // Update the current frame based on the elapsed time
-    int currentFrame = static_cast<int>((weaponTimer.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
+    int currentFrame = static_cast<int>((timerEnemy.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
 
-    // Set the texture rect based on the current frame
-    if (player.attacking) {
-        playerWeaponSprite.setTextureRect(frames[currentFrame]);
+
+    for (int i = 0; i < enemies.enemies.size(); i++) {
+        // Set the position of each sprite to the corresponding enemy
+        enemySprites[i].setTextureRect(frames[currentFrame]);
+        enemySprites[i].setPosition(enemies.enemies[i].getPosition());
+        
+        if (enemies.enemiesVelocities[i].x < 0) { 
+            enemySprites[i].setScale(-1.5f, 1.5f);
+            enemySprites[i].setOrigin(enemySprites[i].getLocalBounds().width, 0.f); // set origin to right edge
+
+        } else {
+            enemySprites[i].setScale(1.5f, 1.5f);
+            enemySprites[i].setOrigin(0.f, 0.f);
+        }
     }
-    playerWeaponSprite.setPosition(player.playerCharacter[0].getPosition().x, player.playerCharacter[0].getPosition().y);
-
 }
-
 
 
 
 void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     
-    //updateSpritesPosition();
+    updateBGSpritePosition();
     animatePlayerSprite();
-    animateWeapon();
+    animateEnemySprites();
+    animateLevelSprites();
     cameraView(window, view);
     render(window);
     

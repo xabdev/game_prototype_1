@@ -42,6 +42,9 @@ void Player::weaponAttack() {
         if (velocity.x > 0 || lastVelocity == 1) {
 
             attacking = true;
+            attackAnimation = true;
+            attackTiming.restart();
+            
             attackTimer.restart();
             playerCharacter[1].setScale(sf::Vector2f(1, 1));
         }

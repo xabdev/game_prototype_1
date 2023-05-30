@@ -126,6 +126,7 @@ std::vector<std::vector<sf::Color>> Levels::grid2shapes() {
 }
 
 
+
 std::vector<sf::RectangleShape> Levels::createLevel() {
     std::vector<std::vector<sf::Color>> resultGrid = grid2shapes();
     std::vector<sf::RectangleShape> level;
@@ -163,6 +164,25 @@ std::vector<sf::RectangleShape> Levels::createLevel() {
             }
 
             startCol = endCol;
+        }
+    }
+
+    return level;
+}
+
+std::vector<sf::RectangleShape> Levels::createLevelShapes() {
+    std::vector<std::vector<sf::Color>> resultGrid = grid2shapes();
+    std::vector<sf::RectangleShape> level;
+
+    for (int row = 0; row < gridHeight; ++row) {
+        for (int col = 0; col < gridWidth; ++col) {
+            if (resultGrid[row][col] != sf::Color::Transparent) {
+                sf::RectangleShape cellShape(sf::Vector2f(cellSize, cellSize));
+                cellShape.setFillColor(resultGrid[row][col]);
+                cellShape.setPosition(col * cellSize, row * cellSize);
+
+                level.push_back(cellShape);
+            }
         }
     }
 

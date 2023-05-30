@@ -23,6 +23,8 @@ class Player {
         bool isOnGround;
         bool attacking = false;
         bool onCooldown = false;
+        bool attackAnimation = false;
+        sf::Clock attackTiming;
         
         
         std::vector<sf::RectangleShape> createPlayer();
@@ -33,7 +35,7 @@ class Player {
 
 
         Player() {
-            moveSpeed = 0.7f;
+            moveSpeed = 0.3f;
             health = 100;
             attack = 50;
             velocity = {0, 0};

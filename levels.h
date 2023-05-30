@@ -18,10 +18,12 @@ class Levels {
         std::vector<std::vector<int>> image2Grid();
         std::vector<std::vector<sf::Color>> grid2shapes();
         std::vector<sf::RectangleShape> createLevel();
-        //std::vector<sf::RectangleShape> mergeCellsToRectangles(const std::vector<std::vector<int>>& grid);
+        std::vector<sf::RectangleShape> createLevelShapes();
+        
         std::vector<sf::RectangleShape> createRectangles(const std::vector<std::vector<int>>& resultGrid);
 
         std::vector<sf::RectangleShape> level;
+        std::vector<sf::RectangleShape> levelShapes;
         std::vector<std::vector<int>> levelGrid;
 
         Levels() {
@@ -29,6 +31,8 @@ class Levels {
 
             levelGrid = image2Grid();
 
+            levelShapes = createLevelShapes();
+            
             level = createLevel();
 
 

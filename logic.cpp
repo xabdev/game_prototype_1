@@ -77,7 +77,7 @@ void Logic::debugKeys() {
 void Logic::updatePlayerVelocity() {
     // Apply drag to the player's velocity
 
-    player.velocity.x *= 0.75;
+    player.velocity.x *= 0.80;
     player.playerCharacter[0].move(player.velocity);
 
     limitPlayerMovementToGrid();
