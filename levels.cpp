@@ -132,43 +132,49 @@ std::vector<sf::RectangleShape> Levels::createLevel() {
     std::vector<sf::RectangleShape> level;
 
     for (int row = 0; row < gridHeight; ++row) {
-        int startCol = 0;
-        int endCol = 0;
+        for (int col = 0; col < gridWidth; ++col) {
+            if (resultGrid[row][col] != sf::Color::Transparent) {
+                // Find the adjacent cells of the same color horizontally
+                int startCol = col;
+                int endCol = col;
 
-        while (endCol < gridWidth) {
-            // Find the start and end columns of a series of adjacent marked cells
-            while (startCol < gridWidth && resultGrid[row][startCol] == sf::Color::Transparent) {
-                startCol++;
-            }
-            endCol = startCol;
-
-            bool hasAdjacentVertical = false;
-            for (int i = startCol; i < endCol; ++i) {
-                if (row > 0 && resultGrid[row - 1][i] != sf::Color::Transparent) {
-                    hasAdjacentVertical = true;
-                    break;
+                while (endCol < gridWidth && resultGrid[row][endCol] == resultGrid[row][col]) {
+                    ++endCol;
                 }
-            }
 
-            while (endCol < gridWidth && resultGrid[row][endCol] != sf::Color::Transparent && !hasAdjacentVertical) {
-                endCol++;
-            }
+                // Find the adjacent cells of the same color vertically
+                int startRow = row;
+                int endRow = row;
 
-            // Create a rectangle shape for the series of adjacent cells
-            if (startCol < gridWidth && !hasAdjacentVertical) {
-                sf::RectangleShape cellShape(sf::Vector2f((endCol - startCol) * cellSize, cellSize));
-                cellShape.setFillColor(resultGrid[row][startCol]);
-                cellShape.setPosition(startCol * cellSize, row * cellSize);
+                while (endRow < gridHeight && resultGrid[endRow][col] == resultGrid[row][col]) {
+                    ++endRow;
+                }
+
+                // Create a rectangle shape for the adjacent cells
+                sf::RectangleShape cellShape(sf::Vector2f((endCol - startCol) * cellSize, (endRow - startRow) * cellSize));
+                cellShape.setFillColor(resultGrid[row][col]);
+                cellShape.setOutlineColor(sf::Color::White);
+                cellShape.setOutlineThickness(2.0);
+                cellShape.setPosition(startCol * cellSize, startRow * cellSize);
 
                 level.push_back(cellShape);
-            }
 
-            startCol = endCol;
+                // Mark the processed cells as transparent
+                for (int i = startRow; i < endRow; ++i) {
+                    for (int j = startCol; j < endCol; ++j) {
+                        resultGrid[i][j] = sf::Color::Transparent;
+                    }
+                }
+            }
         }
     }
 
     return level;
 }
+
+
+
+
 
 std::vector<sf::RectangleShape> Levels::createLevelShapes() {
     std::vector<std::vector<sf::Color>> resultGrid = grid2shapes();

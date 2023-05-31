@@ -12,15 +12,14 @@ Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies) : logic(logic
     createLevelSprites();
     background1Texture = loadTexture("img/background1.png");
     createBackgroundSprite();
-
-    
+    createWeaponSprite();
 
 }
 
 
 void Graphics::render(sf::RenderWindow& window) {
 
-    window.clear(sf::Color(0, 0, 171));
+    window.clear(sf::Color(0, 0, 0));
     
     /*for (int row = 0; row < logic.gridHeight; ++row) {
         for (int col = 0; col < logic.gridWidth; ++col) {
@@ -36,13 +35,10 @@ void Graphics::render(sf::RenderWindow& window) {
     }*/
        
     window.draw(background1);
-
     
     for (auto& element : enemies.enemies) {
         window.draw(element);
     }
-
-
 
     /*for (auto& element : levels.levelShapes) {
         window.draw(element);
@@ -56,18 +52,18 @@ void Graphics::render(sf::RenderWindow& window) {
         window.draw(element);
     }
 
-
     for (auto& element : player.playerCharacter) {
         window.draw(element);
     }
  
+    window.draw(weaponSprite);
     window.draw(playerSprite);
 
     window.display();
 }
 
 
-void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
+/*void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
     sf::Vector2u windowSize = window.getSize();
     const sf::Vector2u originalWindowSize(1280, 720); // Replace with your original window size
 
@@ -114,7 +110,43 @@ void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
     //view.setCenter(playerX, playerY);
 
     window.setView(view);
+}*/
+
+
+void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
+    sf::Vector2u windowSize = window.getSize();
+    float windowWidth = static_cast<float>(windowSize.x);
+    float windowHeight = static_cast<float>(windowSize.y);
+
+    float desiredAspectRatio = 16.0f / 9.0f;
+    float desiredWidth = windowHeight * desiredAspectRatio;
+
+    float leftEdge = desiredWidth * 0.2f;    // Distance from the left edge
+    float rightEdge = desiredWidth * 0.10f;   // Distance from the right edge
+
+    sf::Vector2f playerPosition = player.playerCharacter[0].getPosition();
+    sf::Vector2f currentCenter = view.getCenter();
+
+    float newCenterX = currentCenter.x;
+
+    if (playerPosition.x - newCenterX > rightEdge) {
+        newCenterX = playerPosition.x - rightEdge;
+    } else if (newCenterX - playerPosition.x > leftEdge) {
+        newCenterX = playerPosition.x + leftEdge;
+    }
+
+    float newCenterY = windowHeight / 2.0f;
+
+    view.setSize(desiredWidth, windowHeight);
+    view.setCenter(newCenterX, newCenterY);
+    window.setView(view);
 }
+
+
+
+
+
+
 
 
 sf::Texture Graphics::loadTexture(std::string filename) {
@@ -131,10 +163,19 @@ void Graphics::createPlayerSprite() {
     //playerSprite.setPosition(2500, 300);
 }
 
+void Graphics::createWeaponSprite() {
+
+    sf::IntRect weaponRect(663, 0, 171  , 25);
+    weaponSprite.setTexture(playerTexture);
+    weaponSprite.setTextureRect(weaponRect);
+
+
+
+}
+
 void Graphics::createBackgroundSprite() {
     background1.setTexture(background1Texture);
-    background1.setPosition(1500, 120);
-    background1.setScale(3, 3);
+    background1.setPosition(-720, 0);
 }
 
 
@@ -170,24 +211,39 @@ void Graphics::createLevelSprites() {
 }
 
 
+void Graphics::updateBGSpritePosition(sf::View& view) {
+    sf::Vector2f playerPosition = player.playerCharacter[0].getPosition();
+    sf::Vector2f cameraCenter = view.getCenter();
+    sf::Vector2f cameraSize = view.getSize();
 
+    float leftEdge = cameraSize.x * 0.2f;    // Distance from the left edge
+    float rightEdge = cameraSize.x * 0.10f;   // Distance from the right edge
 
+    float deltaX = 0.0f;
 
-void Graphics::updateBGSpritePosition() {
+    if (playerPosition.x - cameraCenter.x > rightEdge) {
+        deltaX = -0.2;//(playerPosition.x - cameraCenter.x - rightEdge);
+    } else if (cameraCenter.x - playerPosition.x > leftEdge) {
+        deltaX = 0.2;//cameraCenter.x - playerPosition.x - leftEdge;
+    }
+
+    background1.move(deltaX, 0.0f);
+}
+
+void Graphics::updateWeaponSpritePosition() {
+
+    weaponSprite.setPosition(player.playerCharacter[1].getPosition().x, player.playerCharacter[1].getPosition().y);    
     
-    float x = background1.getPosition().x;
-    std::cout << player.velocity.x << "\n";
-
-    if (player.velocity.x > 1.f) {
-        x -= 0.5;
-        background1.setPosition(x, background1.getPosition().y);
-    }
-    if (player.velocity.x < 1.f) {
-        x += 0.5;
-        background1.setPosition(x, background1.getPosition().y);
-    }
+    if (player.attackBOOL) {
+        if (std::signbit(player.velocity.x)) {
+            weaponSprite.setScale(-1.f, 1.f); // Reverse X scale
+        } else if (player.velocity.x > 0) {
+            weaponSprite.setScale(1.f, 1.f);
+        }
+    } else { weaponSprite.setScale(0, 0); };
 
 }
+
 
 
 
@@ -239,7 +295,7 @@ void Graphics::animatePlayerSprite() {
         numFrames = NUM_JUMP_FRAMES;
     }
 
-    if (player.attackAnimation) {
+    if (player.attackBOOL) {
         frames = attackFrames;
         numFrames = NUM_ATTACK_FRAMES;
     }
@@ -263,10 +319,10 @@ void Graphics::animatePlayerSprite() {
     // Set sprite to the player position
     playerSprite.setPosition(player.playerCharacter[0].getPosition().x, player.playerCharacter[0].getPosition().y);
 
-    if (player.attackTiming.getElapsedTime().asSeconds() > 0.033) {
-        player.attackAnimation = false;
-    }
+
 }
+
+
 
 void Graphics::animateLevelSprites() {
 
@@ -351,7 +407,8 @@ void Graphics::animateEnemySprites() {
 
 void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     
-    updateBGSpritePosition();
+    updateBGSpritePosition(view);
+    updateWeaponSpritePosition();
     animatePlayerSprite();
     animateEnemySprites();
     animateLevelSprites();

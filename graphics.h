@@ -16,7 +16,8 @@ class Graphics {
         void render(sf::RenderWindow& window);
         void cameraView(sf::RenderWindow& window, sf::View& view);
         void graphicsMain(sf::RenderWindow& window, sf::View& view);
-        void updateBGSpritePosition();
+        void updateBGSpritePosition(sf::View& view);
+        void updateWeaponSpritePosition();
         void animatePlayerSprite();
         void animateEnemySprites();
         void animateLevelSprites();
@@ -27,11 +28,13 @@ class Graphics {
         void createEnemySprites();
         void createLevelSprites();
         void createBackgroundSprite();
+        void createWeaponSprite();
 
 
 
         sf::Sprite playerSprite;
         sf::Texture playerTexture;
+        sf::Sprite weaponSprite;
         sf::Texture enemyTexture;
         std::vector<sf::Sprite> enemySprites;
         sf::Texture cellTexture;

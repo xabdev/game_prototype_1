@@ -32,6 +32,7 @@ class Logic {
         void limitPlayerMovementToGrid();
         void preCalculatePlatformPositions();
         void playerDamaged();
+        void playerAttack();
         void weaponCollision();
         std::array<bool, 4> collisionSide(const std::vector<sf::FloatRect>& platformBounds);
 

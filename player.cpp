@@ -14,17 +14,15 @@ std::vector<sf::RectangleShape> Player::createPlayer() {
 
 std::vector<sf::RectangleShape> Player::createPlayerWeapon() {
     sf::RectangleShape weapon;
-    sf::Vector2f weaponSize = {120, 35};
+    sf::Vector2f weaponSize = {200, 40};
     weapon.setSize(weaponSize);
     weapon.setScale(0, 0);
-    weapon.setFillColor(sf::Color::Blue);
-    weapon.setOutlineColor(sf::Color::Black);
-    weapon.setOutlineThickness(2.0f);
+    weapon.setFillColor(sf::Color::Transparent);
     playerCharacter.push_back(weapon);
     return playerCharacter;
 }
 
-void Player::weaponAttack() {
+/*void Player::weaponAttack() {
     
     static sf::Clock attackTimer;
     static sf::Clock cooldownTimer;
@@ -62,4 +60,14 @@ void Player::weaponAttack() {
         cooldownTimer.restart();
         onCooldown = true;
     }
+}*/
+
+
+void Player::weaponAttack() {
+
+    if (!attackBOOL && !attacking) {
+        attackBOOL = true;
+    }
+
 }
+
