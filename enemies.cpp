@@ -57,7 +57,7 @@ std::vector<sf::RectangleShape> Enemies::createEnemies() {
     for (int i = 0; i < numEnemies; i++) {
         enemy.setSize(sf::Vector2f(90, 180));
         enemy.setFillColor(sf::Color::Transparent);
-        enemy.setPosition(-200, 200);
+        enemy.setPosition(-800, 200);
         enemies.push_back(enemy);
     }
     return enemies;

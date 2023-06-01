@@ -27,7 +27,7 @@ class Player {
         sf::Clock attackTiming;
         sf::Clock cooldownTimer;
         sf::Clock attackDurationTimer;
-        float attackDuration = .05f;
+        float attackDuration = .1;
         bool attackBOOL = false;
         
         

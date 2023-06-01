@@ -3,7 +3,7 @@
 
 std::vector<sf::RectangleShape> Items::createExpItem() {
     sf::RectangleShape expShape;
-    int item_num = 2000;
+    int item_num = 5000;
 
     for (int i = 0; i < item_num; i++) {
         expShape.setSize(sf::Vector2f(14.5, 25));

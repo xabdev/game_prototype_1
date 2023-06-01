@@ -15,7 +15,7 @@ void Logic::gravityZ() {
 
 
     for (size_t i = 0; i < enemies.enemies.size(); i++) {
-        if (enemies.enemies[i].getPosition().x != -200) {
+        if (enemies.enemies[i].getPosition().x > -200) {
             enemies.enemiesVelocities[i].y += Gravity;
             enemies.enemies[i].move(enemies.enemiesVelocities[i]);
         }
@@ -31,7 +31,7 @@ void Logic::gravityZ() {
 }
 
 
-float randNum(float start, float end) {
+float Logic::randNum(float start, float end) {
   static std::random_device rd;
   static std::mt19937 engine(rd());
   std::uniform_real_distribution<float> dist(start, end);
@@ -71,7 +71,7 @@ void Logic::vJoy() {
     updatePlayerVelocity();
     player.velocity.x *= 0.90f;
     //Position player weapon
-    player.playerCharacter[1].setPosition(player.playerCharacter[0].getPosition().x + player.playerCharacter[0].getSize().x / 2, player.playerCharacter[0].getPosition().y + 30);
+    player.playerCharacter[1].setPosition(player.playerCharacter[0].getPosition().x + player.playerCharacter[0].getSize().x / 2, player.playerCharacter[0].getPosition().y - 25);
 
 
 }
@@ -126,7 +126,7 @@ void Logic::playerDamaged() {
 
 
 void Logic::playerAttack() {
-    //std::cout << player.attackBOOL << "\n";
+    
     // Check if the attack cooldown is over
     if (player.onCooldown && player.cooldownTimer.getElapsedTime().asSeconds() > player.attackCD) {
         player.onCooldown = false;
@@ -141,7 +141,6 @@ void Logic::playerAttack() {
         } else if (player.velocity.x > 0) {
             player.playerCharacter[1].setScale(1.f, 1.f);
         }
-        player.attackDurationTimer.restart(); // Start the attack duration timer
     }
 
     // End the attack after the specified attack duration
@@ -151,6 +150,8 @@ void Logic::playerAttack() {
         player.cooldownTimer.restart();
         player.onCooldown = true;
         player.attackBOOL = false;
+        std::cout << player.attackDurationTimer.getElapsedTime().asSeconds() << "\n";
+        player.attackDurationTimer.restart();
     }
 }
 
@@ -493,7 +494,7 @@ void Logic::enemyDamaged(int index) {
 
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !enemies.hitStatus[index]) {
         enemies.hitStatus[index] = true;
-        enemies.enemiesHealth[index] -= 30;
+        enemies.enemiesHealth[index] -= 100;
         enemies.hitCooldown[index].restart();
     }    
 }
@@ -556,7 +557,7 @@ void Logic::logicMain() {
     gravityZ();
 
     enemiesAI();
-    playerDamaged();
+    //playerDamaged();
     itemCollision();
     itemCollisionWithLevel();
     playerAttack();

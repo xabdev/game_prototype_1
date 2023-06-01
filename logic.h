@@ -25,6 +25,7 @@ class Logic {
         std::vector<sf::FloatRect> platformBounds;
 
         void debugKeys();
+        float randNum(float start, float end);
 
         void gravityZ();
         void vJoy();

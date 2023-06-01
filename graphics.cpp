@@ -12,7 +12,6 @@ Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies, Items& items)
     createLevelSprites();
     background1Texture = loadTexture("img/background1.png");
     createBackgroundSprite();
-    createWeaponSprite();
     itemTexture = loadTexture("img/item.png");
     createItemSprites();
 
@@ -67,11 +66,11 @@ void Graphics::render(sf::RenderWindow& window) {
         window.draw(element);
     }
 
-    for (auto& element : player.playerCharacter) {
+    /*for (auto& element : player.playerCharacter) {
         window.draw(element);
-    }
+    }*/
  
-    window.draw(weaponSprite);
+    
     window.draw(playerSprite);
 
     window.display();
@@ -178,12 +177,12 @@ void Graphics::createPlayerSprite() {
     //playerSprite.setPosition(2500, 300);
 }
 
-void Graphics::createWeaponSprite() {
+/*void Graphics::createWeaponSprite() {
 
     sf::IntRect weaponRect(663, 0, 171  , 25);
     weaponSprite.setTexture(playerTexture);
     weaponSprite.setTextureRect(weaponRect);
-}
+}*/
 
 void Graphics::createItemSprites() {
 
@@ -273,7 +272,7 @@ void Graphics::updateBGSpritePosition(sf::View& view) {
     background1.move(deltaX, 0.0f);
 }
 
-void Graphics::updateWeaponSpritePosition() {
+/*void Graphics::updateWeaponSpritePosition() {
 
     weaponSprite.setPosition(player.playerCharacter[1].getPosition().x, player.playerCharacter[1].getPosition().y);    
     
@@ -285,7 +284,7 @@ void Graphics::updateWeaponSpritePosition() {
         }
     } else { weaponSprite.setScale(0, 0); };
 
-}
+}*/
 
 
 
@@ -295,29 +294,36 @@ void Graphics::animatePlayerSprite() {
 
     static sf::Clock timer;
 
-    sf::IntRect idle(0, 0, 76, 136);
-    sf::IntRect walk1(76, 0, 77, 136);
-    sf::IntRect walk2(153, 0, 76, 136);
-    sf::IntRect walk3(229, 0, 75, 136);
-    sf::IntRect jump(304, 0, 72, 136);
-    sf::IntRect attack1(376, 0, 106, 136);
-    sf::IntRect attack2(482, 0, 74, 136);
-    sf::IntRect attack3(556, 0, 108, 136);
+    sf::IntRect idle(0, 0, 94, 135);
+
+    sf::IntRect walk1(94, 0, 94, 135);
+    sf::IntRect walk2(188, 0, 84, 135);
+    sf::IntRect walk3(272, 0, 59, 135);
+    sf::IntRect walk4(331, 0, 78, 135);
+    sf::IntRect walk5(409, 0, 76, 135);
+    sf::IntRect walk6(485, 0, 76, 135);
+
+    sf::IntRect jump(561, 0, 73, 136);
+
+    sf::IntRect attack1(634, 0, 138, 136);
+    sf::IntRect attack2(772, 0, 120, 136);
+    sf::IntRect attack3(892, 0, 215, 136);
 
 
     // Define the duration of each frame in seconds
-    const float FRAME_DURATION = 0.1f;
+    float FRAME_DURATION = 0.1f;
+
 
     sf::IntRect idleFrames[] = { idle };
     const int NUM_IDLE_FRAMES = sizeof(idleFrames) / sizeof(idleFrames[0]);
 
-    sf::IntRect walkFrames[] = { walk1, walk2, walk3 };
+    sf::IntRect walkFrames[] = { walk1, walk2, walk3, walk4, walk5, walk6 };
     const int NUM_WALKING_FRAMES = sizeof(walkFrames) / sizeof(walkFrames[0]);
 
     sf::IntRect jumpFrames[] = { jump };
     const int NUM_JUMP_FRAMES = sizeof(jumpFrames) / sizeof(jumpFrames[0]);
 
-    sf::IntRect attackFrames[] = {attack1, attack2, attack3};
+    sf::IntRect attackFrames[] = { /*attack1, */attack2, attack3};
     const int NUM_ATTACK_FRAMES = sizeof(attackFrames) / sizeof(attackFrames[0]);
 
 
@@ -339,6 +345,7 @@ void Graphics::animatePlayerSprite() {
     }
 
     if (player.attackBOOL) {
+        
         frames = attackFrames;
         numFrames = NUM_ATTACK_FRAMES;
     }
@@ -346,24 +353,30 @@ void Graphics::animatePlayerSprite() {
     // Update the current frame based on the elapsed time
     int currentFrame = static_cast<int>((timer.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
 
+
     // Set the texture rect based on the current frame
     playerSprite.setTextureRect(frames[currentFrame]);
 
 
-    if (player.velocity.x > 0) { 
+    if (player.velocity.x < 0) {
         playerSprite.setScale(-1, 1);
-        playerSprite.setOrigin(playerSprite.getLocalBounds().width, 0.f); // set origin to right edge
-
+        playerSprite.setOrigin(player.playerCharacter[0].getSize().x, 0.f);
+        playerSprite.setPosition(player.playerCharacter[0].getPosition());
     } else {
         playerSprite.setScale(1, 1);
         playerSprite.setOrigin(0.f, 0.f);
+        playerSprite.setPosition(player.playerCharacter[0].getPosition());
     }
 
+
     // Set sprite to the player position
-    playerSprite.setPosition(player.playerCharacter[0].getPosition().x, player.playerCharacter[0].getPosition().y);
+    //playerSprite.setPosition(player.playerCharacter[0].getPosition().x, player.playerCharacter[0].getPosition().y);
 
 
 }
+
+
+
 
 void Graphics::updateUIElementsPosition(sf::View& view) {
 
@@ -514,7 +527,6 @@ void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     
     updateBGSpritePosition(view);
     updateUIElementsPosition(view);
-    updateWeaponSpritePosition();
     animatePlayerSprite();
     animateEnemySprites();
     animateItemSprites();
