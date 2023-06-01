@@ -16,6 +16,8 @@ Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies, Items& items)
     itemTexture = loadTexture("img/item.png");
     createItemSprites();
 
+    createUIElements();
+
 }
 
 
@@ -58,6 +60,10 @@ void Graphics::render(sf::RenderWindow& window) {
     }
     
     for (auto& element : enemySprites) {
+        window.draw(element);
+    }
+
+    for (auto& element : uiElements) {
         window.draw(element);
     }
 
@@ -210,6 +216,21 @@ void Graphics::createEnemySprites() {
     }
 }
 
+
+void Graphics::createUIElements() {
+
+    sf::RectangleShape uiElement1;
+    sf::RectangleShape uiElement2;
+    uiElement1.setSize(sf::Vector2f {200, 20});
+    uiElement2.setSize(sf::Vector2f {200, 20});
+    uiElement1.setFillColor(sf::Color::Green);
+    uiElement2.setFillColor(sf::Color::Transparent);
+    uiElement2.setOutlineColor(sf::Color::Black);
+    uiElement2.setOutlineThickness(2.0f);
+    uiElements.push_back(uiElement2);
+    uiElements.push_back(uiElement1);
+}
+
 void Graphics::createLevelSprites() {
 
     sf::Color ground = {29, 148, 82, 255 };
@@ -344,6 +365,24 @@ void Graphics::animatePlayerSprite() {
 
 }
 
+void Graphics::updateUIElementsPosition(sf::View& view) {
+
+    for (int i = 0; i < uiElements.size(); i++) {
+        uiElements[i].setPosition(view.getCenter().x - 620, 20);
+    }
+
+    float currentWidth = (static_cast<float>(player.health) / 100.0f) * 200;
+    uiElements[1].setSize(sf::Vector2f(currentWidth, 20));
+
+    if (currentWidth > 100) {
+        uiElements[1].setFillColor(sf::Color::Green);
+    }
+    if (currentWidth < 100) {
+        uiElements[1].setFillColor(sf::Color::Red);
+    }
+
+}
+
 
 
 void Graphics::animateLevelSprites() {
@@ -474,6 +513,7 @@ void Graphics::animateItemSprites() {
 void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     
     updateBGSpritePosition(view);
+    updateUIElementsPosition(view);
     updateWeaponSpritePosition();
     animatePlayerSprite();
     animateEnemySprites();

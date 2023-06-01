@@ -7,6 +7,7 @@ Logic::Logic(Player& player, Enemies& enemies, Items& items) : gridmanager(gridW
 
 }
 
+
 void Logic::gravityZ() {
     const float Gravity = 0.9f;
     player.velocity.y += Gravity; 
@@ -72,6 +73,7 @@ void Logic::vJoy() {
     //Position player weapon
     player.playerCharacter[1].setPosition(player.playerCharacter[0].getPosition().x + player.playerCharacter[0].getSize().x / 2, player.playerCharacter[0].getPosition().y + 30);
 
+
 }
 
 
@@ -84,10 +86,11 @@ void Logic::debugKeys() {
 
 
 void Logic::updatePlayerVelocity() {
-    // Apply drag to the player's velocity
-    limitPlayerMovementToGrid();
-    player.collision = collisionSide(platformBounds);
+    
+    //limitPlayerMovementToGrid();
     player.playerCharacter[0].move(player.velocity);
+    player.collision = collisionSide(platformBounds);
+    
     
 }
 
@@ -102,7 +105,7 @@ void Logic::playerDamaged() {
             
             sf::Vector2f pushDirection = player.playerCharacter[1].getPosition() - enemies.enemies[i].getPosition();
             pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
-            float pushForce = 5.0f; // Modify this as per your requirements
+            float pushForce = 25.0f; // Modify this as per your requirements
 
             player.playerCharacter[0].move(pushDirection * pushForce);
             
@@ -159,11 +162,9 @@ void Logic::weaponCollision() {
 
             enemyDamaged(i);
 
-
-
             sf::Vector2f pushDirection = enemies.enemies[i].getPosition() - player.playerCharacter[1].getPosition();
             pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
-            float pushForce = 50.0f; // Modify this as per your requirements
+            float pushForce = 20.0f; // Modify this as per your requirements
             //std::cout << "push direction: " << pushDirection.x << " " << pushDirection.y << "\n";
 
             enemies.enemies[i].move(pushDirection * pushForce);
@@ -217,6 +218,7 @@ void Logic::limitPlayerMovementToGrid() {
         newPosition.y = maxY;
         player.playerCharacter[0].setPosition(newPosition);
     }
+
 }
 
 
@@ -420,7 +422,7 @@ void Logic::enemiesRespawner() {
 
         if (decreaseElapsed.asSeconds() > 15.0f && respawn_time > 0.5) {
             respawn_time -= 0.50f;
-            std::cout << respawn_time << "\n";
+            //std::cout << respawn_time << "\n";
             decreaseTimer.restart();
         }
     }
@@ -470,10 +472,6 @@ void Logic::itemCollisionWithLevel() {
         }
     }
 }
-
-
-
-
 
 
 void Logic::enemyDamaged(int index) {
@@ -558,7 +556,7 @@ void Logic::logicMain() {
     gravityZ();
 
     enemiesAI();
-    //playerDamaged();
+    playerDamaged();
     itemCollision();
     itemCollisionWithLevel();
     playerAttack();

@@ -39,7 +39,7 @@ class Player {
 
 
         Player() {
-            moveSpeed = 0.2f;
+            moveSpeed = 0.25f;
             health = 100;
             attack = 50;
             velocity = {0, 0};

@@ -23,6 +23,7 @@ class Graphics {
         void animateEnemySprites();
         void animateLevelSprites();
         void animateItemSprites();
+        void updateUIElementsPosition(sf::View& view);
 
         sf::Texture loadTexture(std::string filename);
 
@@ -32,6 +33,7 @@ class Graphics {
         void createBackgroundSprite();
         void createWeaponSprite();
         void createItemSprites();
+        void createUIElements();
 
 
 
@@ -47,6 +49,9 @@ class Graphics {
         sf::Sprite background1;
         sf::Texture itemTexture;
         std::vector<sf::Sprite> itemSprites;
+
+
+        std::vector<sf::RectangleShape> uiElements;
 
 
 
