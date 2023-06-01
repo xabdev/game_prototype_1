@@ -1,7 +1,7 @@
 #include "graphics.h"
 
 
-Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies) : logic(logic), player(player), enemies(enemies) {
+Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies, Items& items) : logic(logic), player(player), enemies(enemies), items(items) {
 
     playerTexture = loadTexture("img/player.png");
     createPlayerSprite();
@@ -13,6 +13,8 @@ Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies) : logic(logic
     background1Texture = loadTexture("img/background1.png");
     createBackgroundSprite();
     createWeaponSprite();
+    itemTexture = loadTexture("img/item.png");
+    createItemSprites();
 
 }
 
@@ -43,12 +45,19 @@ void Graphics::render(sf::RenderWindow& window) {
     /*for (auto& element : levels.levelShapes) {
         window.draw(element);
     }*/
-    
-    for (auto& element : enemySprites) {
+    for (auto& element : items.expShapes) {
         window.draw(element);
     }
 
+    for (auto& element : itemSprites) {
+        window.draw(element);
+    }
+    
     for (auto& element : cellSprites) {
+        window.draw(element);
+    }
+    
+    for (auto& element : enemySprites) {
         window.draw(element);
     }
 
@@ -168,10 +177,23 @@ void Graphics::createWeaponSprite() {
     sf::IntRect weaponRect(663, 0, 171  , 25);
     weaponSprite.setTexture(playerTexture);
     weaponSprite.setTextureRect(weaponRect);
-
-
-
 }
+
+void Graphics::createItemSprites() {
+
+    sf::Sprite itemSprite;
+    
+    for (int i = 0; i < items.expShapes.size(); i++) {
+
+        itemSprite.setTexture(itemTexture);
+        itemSprite.setScale(0.25, 0.25);
+        itemSprites.push_back(itemSprite);
+    }
+    
+}
+
+
+
 
 void Graphics::createBackgroundSprite() {
     background1.setTexture(background1Texture);
@@ -404,6 +426,50 @@ void Graphics::animateEnemySprites() {
 }
 
 
+void Graphics::animateItemSprites() {
+
+    static sf::Clock timer;
+    static int frameCount;
+    //const float animationSpeed = 0.01f; // 
+
+
+    sf::IntRect coin1(0, 0, 58, 100);
+    sf::IntRect coin2(58, 0, 58, 100);
+    sf::IntRect coin3(116, 0, 58, 120);
+    sf::IntRect coin4(174, 0, 63, 120);
+
+
+
+    // Define the duration of each frame in seconds
+    const float FRAME_DURATION = 0.1f;
+
+    // Define the animation frames for the walking animation
+    sf::IntRect itemFrames[] = {
+        coin1,
+        coin2,
+        coin3,
+        coin4,
+
+    };
+    const int NUM_WALKING_FRAMES = sizeof(itemFrames) / sizeof(itemFrames[0]);
+
+    sf::IntRect* frames = itemFrames;
+    int numFrames;
+    numFrames = NUM_WALKING_FRAMES;
+
+    // Update the current frame based on the elapsed time
+    int currentFrame = static_cast<int>((timer.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
+
+
+    for (int i = 0; i < enemies.enemies.size(); i++) {
+        // Set the position of each sprite to the corresponding enemy
+        itemSprites[i].setTextureRect(frames[currentFrame]);
+        itemSprites[i].setPosition(items.expShapes[i].getPosition());
+        
+    }
+}
+
+
 
 void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     
@@ -411,6 +477,7 @@ void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     updateWeaponSpritePosition();
     animatePlayerSprite();
     animateEnemySprites();
+    animateItemSprites();
     animateLevelSprites();
     cameraView(window, view);
     render(window);

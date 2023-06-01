@@ -27,6 +27,20 @@ std::vector<bool> Enemies::setEnemiesHitStatus() {
     return hitStatus;
 }
 
+
+
+std::vector<bool> Enemies::setEnemiesMass() {
+
+    bool solid = true;
+    for (int i = 0; i < enemies.size(); i++) {
+        isEnemySolid.push_back(solid);
+    }
+
+    return isEnemySolid;
+}
+
+
+
 std::vector<sf::Clock> Enemies::setEnemiesHitCooldown() {
     sf::Clock timer;
     for (int i = 0; i < enemies.size(); i++) {
@@ -52,32 +66,15 @@ std::vector<sf::RectangleShape> Enemies::createEnemies() {
 
 void Enemies::restartEnemies() {
 
+    enemies.clear();
+    enemiesVelocities.clear(); 
+    enemiesHealth.clear();
+    hitCooldown.clear();
+    hitStatus.clear();
     enemies = createEnemies();
     enemiesVelocities = setEnemiesVelocity();
     enemiesHealth = setEnemiesHealth();
-}
+    hitStatus = setEnemiesHitStatus();
+    hitCooldown = setEnemiesHitCooldown();
 
-void Enemies::enemyDamaged(int index) {
-
-    if (hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
-        hitStatus[index] = false;
-    }
-
-    if (enemiesHealth[index] <= 0) {
-        enemies[index].setPosition(-200, 0);
-        enemiesHealth[index] = 100;
-        //levelUP(50);
-    }
-
-    if (hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !hitStatus[index]) {
-        hitStatus[index] = true;
-        std::cout << "Enemy: " << index << " health: " << enemiesHealth[index] << "\n";
-        enemiesHealth[index] -= 50;
-        std::cout << "Enemy: " << index << " health: " << enemiesHealth[index] << "\n";
-        std::cout << hitCooldown[index].getElapsedTime().asSeconds() << "\n";
-        hitCooldown[index].restart();
-    }
-
-
-    
 }

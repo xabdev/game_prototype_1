@@ -10,15 +10,15 @@ class Enemies {
         std::vector<int> setEnemiesHealth();
         std::vector<bool> setEnemiesHitStatus();
         std::vector<sf::Clock> setEnemiesHitCooldown();
+        std::vector<bool> setEnemiesMass();
         void restartEnemies();
-
-        void enemyDamaged(int index);
 
 
         std::vector<sf::RectangleShape> enemies;
         std::vector<sf::Vector2f> enemiesVelocities;
         std::vector<int> enemiesHealth;
         std::vector<std::vector<bool>> collision;
+        std::vector<bool> isEnemySolid;
         std::vector<bool> hitStatus;
         std::vector<sf::Clock> hitCooldown;
         
@@ -35,13 +35,14 @@ class Enemies {
             enemiesHealth = setEnemiesHealth();
             hitStatus = setEnemiesHitStatus();
             hitCooldown = setEnemiesHitCooldown();
+            isEnemySolid = setEnemiesMass();
             
         }
 
 
 
     private:
-        int numEnemies = 100;
+        int numEnemies = 2000;
         int enemyHealth = 100;
 
 

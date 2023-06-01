@@ -1,7 +1,7 @@
 #include "logic.h"
 
 
-Logic::Logic(Player& player, Enemies& enemies) : gridmanager(gridWidth, gridHeight), player(player), enemies(enemies) {
+Logic::Logic(Player& player, Enemies& enemies, Items& items) : gridmanager(gridWidth, gridHeight), player(player), enemies(enemies), items(items) {
     // Constructor initialization list, initializes the reference member
     preCalculatePlatformPositions();
 
@@ -17,8 +17,15 @@ void Logic::gravityZ() {
         if (enemies.enemies[i].getPosition().x != -200) {
             enemies.enemiesVelocities[i].y += Gravity;
             enemies.enemies[i].move(enemies.enemiesVelocities[i]);
-            
         }
+    }
+
+    for (int i = 0; i < items.expShapes.size(); i++) {
+        if (items.expShapes[i].getPosition().x > -200) {
+            items.itemVelocities[i].y += Gravity;
+            items.expShapes[i].move(items.itemVelocities[i]);
+        }
+
     }
 }
 
@@ -57,6 +64,7 @@ void Logic::vJoy() {
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad7) && !player.onCooldown) {
         player.weaponAttack();
+        weaponCollision();
     }
 
     updatePlayerVelocity();
@@ -101,10 +109,9 @@ void Logic::playerDamaged() {
             
             if (player.health < 0) {
                 player.playerCharacter[0].setPosition(1600, 0);
-                //enemies.enemies.clear();
-                //enemies.enemiesVelocities.clear(); 
-                //enemies.enemiesHealth.clear();
-                //enemies.restartEnemies();
+
+                enemies.restartEnemies();
+
                 player.health += 100;
 
                 //play = false;
@@ -150,7 +157,7 @@ void Logic::weaponCollision() {
         for (size_t i = 0; i < enemies.enemies.size(); ++i) {
         if (player.playerCharacter[1].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
 
-            enemies.enemyDamaged(i);
+            enemyDamaged(i);
 
 
 
@@ -307,56 +314,59 @@ std::vector<std::vector<bool>> Logic::enemyCollisionSide() {
     std::vector<std::vector<bool>> collisionSide(enemies.enemies.size(), std::vector<bool>(4, false));
     
     for (int i = 0; i < enemies.enemies.size(); i++) {
+        
+        if (enemies.isEnemySolid[i] == true) {
 
-        for (auto& platform : platformBounds) {
-                float shapeTop = platform.top;
-                float shapeBottom = platform.top + platform.height;
-                float shapeLeft = platform.left;
-                float shapeRight = platform.left + platform.width;
+         for (auto& platform : platformBounds) {
+                    float shapeTop = platform.top;
+                    float shapeBottom = platform.top + platform.height;
+                    float shapeLeft = platform.left;
+                    float shapeRight = platform.left + platform.width;
             
-            if (enemies.enemies[i].getGlobalBounds().intersects(platform)) {
-                float enemyTop = enemies.enemies[i].getPosition().y;
-                float enemyBottom = enemies.enemies[i].getPosition().y + enemies.enemies[i].getSize().y;
-                float enemyLeft = enemies.enemies[i].getPosition().x;
-                float enemyRight = enemies.enemies[i].getPosition().x + enemies.enemies[i].getSize().x;
+                if (enemies.enemies[i].getGlobalBounds().intersects(platform)) {
+                    float enemyTop = enemies.enemies[i].getPosition().y;
+                    float enemyBottom = enemies.enemies[i].getPosition().y + enemies.enemies[i].getSize().y;
+                    float enemyLeft = enemies.enemies[i].getPosition().x;
+                    float enemyRight = enemies.enemies[i].getPosition().x + enemies.enemies[i].getSize().x;
 
-                float topOverlap = enemyBottom - shapeTop;
-                float bottomOverlap = shapeBottom - enemyTop;
-                float leftOverlap = enemyRight - shapeLeft;
-                float rightOverlap = shapeRight - enemyLeft;
+                    float topOverlap = enemyBottom - shapeTop;
+                    float bottomOverlap = shapeBottom - enemyTop;
+                    float leftOverlap = enemyRight - shapeLeft;
+                    float rightOverlap = shapeRight - enemyLeft;
 
-                if (std::min({ topOverlap, bottomOverlap, leftOverlap, rightOverlap }) > 0.f) {
-                    if (topOverlap < bottomOverlap && topOverlap < leftOverlap && topOverlap < rightOverlap) {
-                        //Tocando el piso
-                        enemies.enemies[i].setPosition(enemies.enemies[i].getPosition().x, shapeTop - enemies.enemies[i].getSize().y);
-                        enemies.enemiesVelocities[i].y = 0;
-                        collisionSide[i][2] = true;
+                    if (std::min({ topOverlap, bottomOverlap, leftOverlap, rightOverlap }) > 0.f) {
+                        if (topOverlap < bottomOverlap && topOverlap < leftOverlap && topOverlap < rightOverlap) {
+                            //Tocando el piso
+                            enemies.enemies[i].setPosition(enemies.enemies[i].getPosition().x, shapeTop - enemies.enemies[i].getSize().y);
+                            enemies.enemiesVelocities[i].y = 0;
+                            collisionSide[i][2] = true;
                         
-                        sf::Vector2f edge = calculateDistances(i, platform);
-                        if (edge.x < 0.f) {
-                            enemyJump(i);
+                            sf::Vector2f edge = calculateDistances(i, platform);
+                            if (edge.x < 0.f) {
+                                enemyJump(i);
+                            }
+                            if (edge.y < 0.f) {
+                                enemyJump(i);
+                            }
+
+                        } else if (bottomOverlap < topOverlap && bottomOverlap < leftOverlap && bottomOverlap < rightOverlap) {
+                            //Tocando el techo
+                            enemies.enemies[i].setPosition(enemies.enemies[i].getPosition().x, shapeBottom);
+                            enemies.enemiesVelocities[i].y = 0;
+                            collisionSide[i][0] = true; 
+
+                        } else if (leftOverlap < topOverlap && leftOverlap < bottomOverlap && leftOverlap < rightOverlap) {
+                            //Tocando la derecha
+                            enemies.enemies[i].setPosition(shapeLeft - enemies.enemies[i].getSize().x, enemies.enemies[i].getPosition().y);
+                            //shapeVelocities[i].x = 0;
+                            collisionSide[i][3] = true;
+
+                        } else if (rightOverlap < topOverlap && rightOverlap < bottomOverlap && rightOverlap < leftOverlap) {
+                            //Tocando la izquierda
+                            enemies.enemies[i].setPosition(shapeRight, enemies.enemies[i].getPosition().y);
+                            //shapeVelocities[i].x = 0;
+                            collisionSide[i][1] = true;
                         }
-                        if (edge.y < 0.f) {
-                            enemyJump(i);
-                        }
-
-                    } else if (bottomOverlap < topOverlap && bottomOverlap < leftOverlap && bottomOverlap < rightOverlap) {
-                        //Tocando el techo
-                        enemies.enemies[i].setPosition(enemies.enemies[i].getPosition().x, shapeBottom);
-                        enemies.enemiesVelocities[i].y = 0;
-                        collisionSide[i][0] = true; 
-
-                    } else if (leftOverlap < topOverlap && leftOverlap < bottomOverlap && leftOverlap < rightOverlap) {
-                        //Tocando la derecha
-                        enemies.enemies[i].setPosition(shapeLeft - enemies.enemies[i].getSize().x, enemies.enemies[i].getPosition().y);
-                        //shapeVelocities[i].x = 0;
-                        collisionSide[i][3] = true;
-
-                    } else if (rightOverlap < topOverlap && rightOverlap < bottomOverlap && rightOverlap < leftOverlap) {
-                        //Tocando la izquierda
-                        enemies.enemies[i].setPosition(shapeRight, enemies.enemies[i].getPosition().y);
-                        //shapeVelocities[i].x = 0;
-                        collisionSide[i][1] = true;
                     }
                 }
             }
@@ -417,6 +427,80 @@ void Logic::enemiesRespawner() {
 }
 
 
+void Logic::itemRespawner(int index) {
+
+    static int rspwn = 0;
+
+    if (rspwn < items.expShapes.size() - 3) {
+        
+        items.expShapes[rspwn].setPosition(enemies.enemies[index].getPosition().x - randNum(0, 100), enemies.enemies[index].getPosition().y);
+        rspwn++;
+        items.expShapes[rspwn].setPosition(enemies.enemies[index].getPosition().x - randNum(0, 100), enemies.enemies[index].getPosition().y);
+        rspwn++;
+        items.expShapes[rspwn].setPosition(enemies.enemies[index].getPosition().x - randNum(0, 100), enemies.enemies[index].getPosition().y);
+        rspwn++;
+    }
+}
+
+
+void Logic::itemCollision() {
+ 
+    for (auto& shape : items.expShapes) {
+        if (player.playerCharacter[0].getGlobalBounds().intersects(shape.getGlobalBounds())) {
+            shape.setPosition(-500, 500);
+        }
+    }
+}
+
+
+void Logic::itemCollisionWithLevel() {
+
+    for (int i = 0; i < items.expShapes.size(); i++) {
+        
+        if (items.expShapes[i].getPosition().x > -200) {
+
+            for (auto& platform : platformBounds) {
+                float shapeTop = platform.top;
+
+                if (items.expShapes[i].getGlobalBounds().intersects(platform/*.getGlobalBounds()*/)) {
+                    items.expShapes[i].setPosition(items.expShapes[i].getPosition().x, shapeTop - items.expShapes[i].getSize().y);
+                    items.itemVelocities[i].y = 0;
+                }
+            }
+        }
+    }
+}
+
+
+
+
+
+
+void Logic::enemyDamaged(int index) {
+
+    if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
+        enemies.hitStatus[index] = false;
+    }
+
+    if (enemies.enemiesHealth[index] <= 0) {
+        
+        itemRespawner(index);
+        enemies.isEnemySolid[index] = false;
+        
+
+        //enemies[index].setPosition(-200, 0);
+        //enemiesHealth[index] = 100;
+        //levelUP(50);
+    }
+
+    if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !enemies.hitStatus[index]) {
+        enemies.hitStatus[index] = true;
+        enemies.enemiesHealth[index] -= 30;
+        enemies.hitCooldown[index].restart();
+    }    
+}
+
+
 sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
 
     const float enemyRange = 2000.0f;
@@ -428,12 +512,17 @@ sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
             // Update only the X component of the enemy velocity based on the player's position
             enemies.enemiesVelocities[index].x = enemyToPlayer.x * enemies.enemyTopSpeed;
         }
+    
+        if (enemies.enemiesHealth[index] <= 0) {
+                enemies.enemiesVelocities[index].x = 0;
+        }
+        /*if (enemies.enemiesHealth[index] <= 70) {
+            enemies.enemiesVelocities[index].y = enemies.enemyJumpSpeed;
+        }
         if (enemies.enemiesHealth[index] <= 50) {
-                enemies.enemiesVelocities[index].y = enemies.enemyJumpSpeed;
-            }
-            if (enemies.enemiesHealth[index] <= 25) {
                 enemies.enemiesVelocities[index].x = enemyToPlayer.x * enemies.enemyAlmostDeadSpeed;
-            }
+        }*/
+
     return enemyToPlayer;
 }
 
@@ -469,11 +558,13 @@ void Logic::logicMain() {
     gravityZ();
 
     enemiesAI();
-    playerDamaged();
+    //playerDamaged();
+    itemCollision();
+    itemCollisionWithLevel();
     playerAttack();
     
     
     vJoy();
-    weaponCollision();
+
     debugKeys();
 }

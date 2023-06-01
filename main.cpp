@@ -7,6 +7,7 @@
 #include "gridmanager.h"
 #include "levels.h"
 #include "enemies.h"
+#include "items.h"
 
 
 
@@ -25,8 +26,9 @@ void runLogicTests() {
     Player player;
     Enemies enemies;
     Levels levels;
-    Logic logic(player, enemies);
-    Graphics graphics(logic, player, enemies);
+    Items items;
+    Logic logic(player, enemies, items);
+    Graphics graphics(logic, player, enemies, items);
     GridManager gridmanager(logic.gridWidth, logic.gridHeight);
 
     // Access the grid and perform tests
@@ -49,8 +51,9 @@ int main() {
    Player player;
    Enemies enemies;
    Levels levels;
-   Logic logic(player, enemies);
-   Graphics graphics(logic, player, enemies);
+   Items items;
+   Logic logic(player, enemies, items);
+   Graphics graphics(logic, player, enemies, items);
    sf::View view;
    //logic.preCalculatePlatformPositions();
 

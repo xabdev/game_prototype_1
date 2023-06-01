@@ -9,13 +9,14 @@
 #include <limits>
 #include <cmath>
 #include <random>
+#include "items.h"
 
 
 
 class Logic {
 
     public:
-        Logic(Player& player, Enemies& enemies);
+        Logic(Player& player, Enemies& enemies, Items& items);
         
         const int gridWidth = 320; // Number of grid cells horizontally
         const int gridHeight = 18; // Number of grid cells vertically
@@ -34,12 +35,16 @@ class Logic {
         void playerDamaged();
         void playerAttack();
         void weaponCollision();
+        void itemCollision();
+        void itemCollisionWithLevel();
         std::array<bool, 4> collisionSide(const std::vector<sf::FloatRect>& platformBounds);
 
 
         std::vector<std::vector<bool>> enemyCollisionSide();
         void enemiesRespawner();
         void enemiesAI();
+        void enemyDamaged(int index);
+        void itemRespawner(int index);
         sf::Vector2f locatePlayerWithIndexV2(int index);
         sf::Vector2f calculateDistances(int enemyIndex, const sf::FloatRect& platformBounds);
         void enemyJump(int index);
@@ -58,6 +63,7 @@ class Logic {
     private:
         Player& player;
         Enemies& enemies;
+        Items& items;
         GridManager gridmanager;
         Levels levels;
         

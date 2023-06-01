@@ -5,13 +5,14 @@
 #include "player.h"
 #include "levels.h"
 #include "enemies.h"
+#include "items.h"
 
 
 class Graphics {
 
     public:
 
-        Graphics(Logic& logic, Player& players, Enemies& enemies);
+        Graphics(Logic& logic, Player& players, Enemies& enemies, Items& items);
 
         void render(sf::RenderWindow& window);
         void cameraView(sf::RenderWindow& window, sf::View& view);
@@ -21,6 +22,7 @@ class Graphics {
         void animatePlayerSprite();
         void animateEnemySprites();
         void animateLevelSprites();
+        void animateItemSprites();
 
         sf::Texture loadTexture(std::string filename);
 
@@ -29,6 +31,7 @@ class Graphics {
         void createLevelSprites();
         void createBackgroundSprite();
         void createWeaponSprite();
+        void createItemSprites();
 
 
 
@@ -42,6 +45,8 @@ class Graphics {
         std::vector<sf::Sprite> cellSprites;
         sf::Texture background1Texture;
         sf::Sprite background1;
+        sf::Texture itemTexture;
+        std::vector<sf::Sprite> itemSprites;
 
 
 
@@ -51,6 +56,7 @@ class Graphics {
         Logic& logic;
         Player& player;
         Enemies& enemies;
+        Items &items;
         Levels levels;
 
 
