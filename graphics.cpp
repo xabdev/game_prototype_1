@@ -433,9 +433,8 @@ void Graphics::animateLevelSprites() {
 
 
 void Graphics::animateEnemySprites() {
-    static sf::Clock timerEnemy;
+
     static int frameCount;
-    //const float animationSpeed = 0.01f; // 
 
     sf::IntRect goroWalking1(0, 0, 62, 120);
     sf::IntRect goroWalking2(62, 0, 63, 120);
@@ -451,7 +450,13 @@ void Graphics::animateEnemySprites() {
     sf::IntRect goroDeath3(767, 0, 94, 120);
     sf::IntRect goroDeath4(861, 0, 79, 120);
     sf::IntRect goroDeath5(940, 0, 107, 120);
-    //sf::IntRect goroDeath6(1047, 0, 123, 120);
+    sf::IntRect goroJump(1049, 0, 68, 120);
+    sf::IntRect goroAttack1(1116, 0, 89, 120);
+    sf::IntRect goroAttack2(1205, 0, 107, 120);
+    sf::IntRect goroAttack3(1312, 0, 66, 120);
+    sf::IntRect goroAttack4(1378, 0, 78, 120);
+    sf::IntRect goroAttack5(1456, 0, 110, 120);
+    sf::IntRect goroDamaged(1566, 0, 69, 120);
 
     // Define the duration of each frame in seconds
     const float FRAME_DURATION = 0.07f;
@@ -480,11 +485,35 @@ void Graphics::animateEnemySprites() {
     };
     const int NUM_DEATH_FRAMES = sizeof(deathFrames) / sizeof(deathFrames[0]);
 
+    sf::IntRect jumpFrames[] = {
+        goroJump
+
+    };
+    const int NUM_JUMP_FRAMES = sizeof(jumpFrames) / sizeof(jumpFrames[0]);
+
+    sf::IntRect attackFrames[] = {
+        goroAttack1,
+        goroAttack2,
+        goroAttack3,
+        goroAttack4,
+        goroAttack5
+
+    };
+    const int NUM_ATTACK_FRAMES = sizeof(attackFrames) / sizeof(attackFrames[0]);
+
+    sf::IntRect damagedFrames[] = {
+        goroDamaged
+    };
+    const int NUM_DAMAGED_FRAMES = sizeof(damagedFrames) / sizeof(damagedFrames[0]);
+
+
+    
+
     for (int i = 0; i < enemies.enemies.size(); i++) {
         sf::IntRect* frames;
         int numFrames;
 
-        if (std::abs(enemies.enemiesVelocities[i].x) > 0.3) {
+        if (std::abs(enemies.enemiesVelocities[i].x) > 0.3 && enemies.enemiesVelocities[i].y == 0) {
             frames = walkingFrames;
             numFrames = NUM_WALKING_FRAMES;
         }
@@ -492,15 +521,28 @@ void Graphics::animateEnemySprites() {
             frames = deathFrames;
             numFrames = NUM_DEATH_FRAMES;
         }
+        else if (enemies.enemiesVelocities[i].y != 0) {
+            frames = jumpFrames;
+            numFrames = NUM_JUMP_FRAMES;
+        }
+        else if (enemies.isEnemyHittingPlayer[i]) {
+            frames = attackFrames;
+            numFrames = NUM_ATTACK_FRAMES;
+        }
         else {
             // Handle any other animation type or default behavior here
             // ...
             continue;
         }
         
+        if (enemies.hitStatus[i]) {
+            frames = damagedFrames;
+            numFrames = NUM_DAMAGED_FRAMES;
+        }
+        
 
         // Update the current frame based on the elapsed time
-        int currentFrame = static_cast<int>((timerEnemy.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
+        int currentFrame = static_cast<int>((enemies.enemyAnimationTimer[i].getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
 
         enemySprites[i].setTextureRect(frames[currentFrame]);
         enemySprites[i].setPosition(enemies.enemies[i].getPosition());

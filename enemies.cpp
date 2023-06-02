@@ -40,6 +40,17 @@ std::vector<bool> Enemies::setEnemiesMass() {
 }
 
 
+std::vector<bool> Enemies::isEnemyHittingThePlayer() {
+
+    bool hit = false;
+    for (int i = 0; i < enemies.size(); i++) {
+        isEnemyHittingPlayer.push_back(hit);
+    }
+
+    return isEnemyHittingPlayer;
+}
+
+
 
 std::vector<sf::Clock> Enemies::setEnemiesHitCooldown() {
     sf::Clock timer;
@@ -51,13 +62,24 @@ std::vector<sf::Clock> Enemies::setEnemiesHitCooldown() {
     return hitCooldown;
 }
 
+std::vector<sf::Clock> Enemies::setEnemiesAnimationTimer() {
+    sf::Clock timer;
+    for (int i = 0; i < enemies.size(); i++) {
+        sf::Clock timer;
+        enemyAnimationTimer.push_back(timer);
+    }
+
+    return enemyAnimationTimer;
+}
+
+
 
 std::vector<sf::RectangleShape> Enemies::createEnemies() {
     sf::RectangleShape enemy;
     for (int i = 0; i < numEnemies; i++) {
         enemy.setSize(sf::Vector2f(70, 180));
         enemy.setFillColor(sf::Color::Red);
-        enemy.setPosition(-800, 200);
+        enemy.setPosition(-1000, 200);
         enemies.push_back(enemy);
     }
     return enemies;

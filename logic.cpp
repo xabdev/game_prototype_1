@@ -15,7 +15,7 @@ void Logic::gravityZ() {
 
 
     for (size_t i = 0; i < enemies.enemies.size(); i++) {
-        if (enemies.enemies[i].getPosition().x > -200) {
+        if (enemies.enemies[i].getPosition().x > -950) {
             enemies.enemiesVelocities[i].y += Gravity;
             enemies.enemies[i].move(enemies.enemiesVelocities[i]);
         }
@@ -121,15 +121,15 @@ void Logic::playerDamaged() {
     for (size_t i = 0; i < enemies.enemies.size(); ++i) {
         if (enemies.enemiesHealth[i] > 0) {
             if (player.playerCharacter[0].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
-                player.health -= 1;
-                std::cout << "YOU GOT HIT! " << player.health << "\n";
+                //player.health -= 1;
+                enemies.enemiesVelocities[i].x *= 0.1;
+                enemies.isEnemyHittingPlayer[i] = true;
             
-
                 sf::Vector2f pushDirection = player.playerCharacter[1].getPosition() - enemies.enemies[i].getPosition();
                 pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
                 float pushForce = 25.0f; // Modify this as per your requirements
 
-                player.playerCharacter[0].move(pushDirection * pushForce);
+                //player.playerCharacter[0].move(pushDirection * pushForce);
             
             
                 if (player.health < 0) {
@@ -138,7 +138,9 @@ void Logic::playerDamaged() {
                     player.playerCharacter[0].setPosition(1600, 0);
                     player.health += 100;
                 }
-            }
+            } else { 
+                enemies.isEnemyHittingPlayer[i] = false;                   
+             }
         }
     }
 }
@@ -175,7 +177,8 @@ void Logic::playerAttack() {
 
 
 void Logic::weaponCollision() {
-    float pushForce = 20.0f;
+    float pushForce = 15.0f;
+    
 
     for (size_t i = 0; i < enemies.enemies.size(); ++i) {
 
@@ -186,13 +189,11 @@ void Logic::weaponCollision() {
             if (enemies.enemiesHealth[i] > 0) {
                 sf::Vector2f pushDirection = enemies.enemies[i].getPosition() - player.playerCharacter[1].getPosition();
                 pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
-                // Modify this as per your requirements
-                //std::cout << "push direction: " << pushDirection.x << " " << pushDirection.y << "\n";
-                enemies.enemies[i].move(pushDirection * pushForce);
+
+                enemies.enemies[i].move(pushDirection.x * 50, 0);
             }
         }
     }
-    std::cout << pushForce << "\n";
 }
 
 
@@ -430,6 +431,7 @@ void Logic::enemiesRespawner() {
             offsetX += randNum(0.f, 150.f);
             enemies.isEnemySolid[respawn] = true;
             enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
+            enemies.enemyAnimationTimer[respawn].restart();
             respawn++;
             /*offsetX += randNum(0.f, 150.f);
             enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
@@ -505,31 +507,49 @@ void Logic::itemCollisionWithLevel() {
 }
 
 
+
+
+
 void Logic::enemyDamaged(int index) {
-
-
+    
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
         enemies.hitStatus[index] = false;
     }
 
+    
+
     if (enemies.enemiesHealth[index] <= 0) {
+        sf::Vector2f pushDirection = enemies.enemies[index].getPosition() - player.playerCharacter[0].getPosition();
+        pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
+
+        enemies.enemiesVelocities[index].x = pushDirection.x * 2;
         itemRespawner(index);
+        enemies.isEnemyHittingPlayer[index] = false;
         enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
+
         if (enemies.enemiesHealth[index] < 0) {
             enemies.enemiesVelocities[index].y = -20.f;
+            
         }
-        
-        enemies.enemiesVelocities[index].x *= 0.1;
+
+        if (!player.isOnGround || player.isJumping) {
+            if (enemies.enemiesHealth[index] < 0) {
+                enemies.enemiesVelocities[index].x = pushDirection.x * 20;
+            }
+        }
+
         enemies.isEnemySolid[index] = false;
     }
 
-
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !enemies.hitStatus[index]) {
         enemies.hitStatus[index] = true;
-        enemies.enemiesHealth[index] -= 100;
+        enemies.enemiesVelocities[index].x *= 0.1;
+        enemies.enemiesHealth[index] -= 50;
         enemies.hitCooldown[index].restart();
-    }    
+    }
 }
+
+
 
 
 sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
@@ -562,6 +582,12 @@ void Logic::enemiesAI() {
     enemies.collision = enemyCollisionSide();
 
     for (size_t i = 0; i < enemies.collision.size(); i++) {
+
+        //villereada 2009
+        if (enemies.hitCooldown[i].getElapsedTime().asSeconds() > 0.15) {
+        enemies.hitStatus[i] = false;
+        }
+        //fin de villereada 2009
 
         if (enemies.collision[i][2]) {
             //std::cout << "Enemy: " << i << " touching floor " << enemies.collision[i][2] << "\n";

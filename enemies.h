@@ -11,6 +11,9 @@ class Enemies {
         std::vector<bool> setEnemiesHitStatus();
         std::vector<sf::Clock> setEnemiesHitCooldown();
         std::vector<bool> setEnemiesMass();
+        std::vector<bool> isEnemyHittingThePlayer();
+        std::vector<sf::Clock> setEnemiesAnimationTimer();
+
         void restartEnemies();
         void resetEnemiesPosition();
 
@@ -22,6 +25,9 @@ class Enemies {
         std::vector<bool> isEnemySolid;
         std::vector<bool> hitStatus;
         std::vector<sf::Clock> hitCooldown;
+        std::vector<bool> isEnemyHittingPlayer;
+        std::vector<sf::Clock> enemyAnimationTimer;
+
         
 
         const float enemyTopSpeed = 2.5f;
@@ -38,6 +44,9 @@ class Enemies {
             hitStatus = setEnemiesHitStatus();
             hitCooldown = setEnemiesHitCooldown();
             isEnemySolid = setEnemiesMass();
+            isEnemyHittingPlayer = isEnemyHittingThePlayer();
+            enemyAnimationTimer = setEnemiesAnimationTimer();
+
             
         }
 
