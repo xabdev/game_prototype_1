@@ -11,6 +11,7 @@ Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies, Items& items)
     blockTexture = loadTexture("img/block.png");
     createLevelSprites();
     background1Texture = loadTexture("img/background1.png");
+    background2Texture = loadTexture("img/background2.png");
     createBackgroundSprite();
     itemTexture = loadTexture("img/item.png");
     createItemSprites();
@@ -38,6 +39,7 @@ void Graphics::render(sf::RenderWindow& window) {
     }*/
        
     window.draw(background1);
+    window.draw(background2);
     
     for (auto& element : enemies.enemies) {
         window.draw(element);
@@ -174,15 +176,9 @@ sf::Texture Graphics::loadTexture(std::string filename) {
 
 void Graphics::createPlayerSprite() {
     playerSprite.setTexture(playerTexture);
-    //playerSprite.setPosition(2500, 300);
 }
 
-/*void Graphics::createWeaponSprite() {
 
-    sf::IntRect weaponRect(663, 0, 171  , 25);
-    weaponSprite.setTexture(playerTexture);
-    weaponSprite.setTextureRect(weaponRect);
-}*/
 
 void Graphics::createItemSprites() {
 
@@ -191,6 +187,7 @@ void Graphics::createItemSprites() {
     for (int i = 0; i < items.expShapes.size(); i++) {
 
         itemSprite.setTexture(itemTexture);
+        itemSprite.setPosition(-500, 0);
         itemSprite.setScale(0.25, 0.25);
         itemSprites.push_back(itemSprite);
     }
@@ -202,7 +199,9 @@ void Graphics::createItemSprites() {
 
 void Graphics::createBackgroundSprite() {
     background1.setTexture(background1Texture);
-    background1.setPosition(-720, 0);
+    background1.setPosition(0, 0);
+    background2.setTexture(background2Texture);
+    background1.setPosition(1280, 0);
 }
 
 
@@ -210,6 +209,7 @@ void Graphics::createEnemySprites() {
 
     sf::Sprite enemySprite;
     for (int i = 0; i < enemies.enemies.size(); i++){
+        enemySprite.setPosition(-5000, 0);
         enemySprite.setTexture(enemyTexture);
         enemySprites.push_back(enemySprite);
     }
@@ -258,36 +258,46 @@ void Graphics::updateBGSpritePosition(sf::View& view) {
     sf::Vector2f cameraCenter = view.getCenter();
     sf::Vector2f cameraSize = view.getSize();
 
-    float leftEdge = cameraSize.x * 0.2f;    // Distance from the left edge
-    float rightEdge = cameraSize.x * 0.10f;   // Distance from the right edge
+    float leftEdge = cameraCenter.x - cameraSize.x / 2.0f + cameraSize.x * 0.2f;    // Distance from the left edge
+    float rightEdge = cameraCenter.x + cameraSize.x / 2.0f - cameraSize.x * 0.1f;   // Distance from the right edge
 
     float deltaX = 0.0f;
 
-    if (playerPosition.x - cameraCenter.x > rightEdge) {
-        deltaX = -0.2;//(playerPosition.x - cameraCenter.x - rightEdge);
-    } else if (cameraCenter.x - playerPosition.x > leftEdge) {
-        deltaX = 0.2;//cameraCenter.x - playerPosition.x - leftEdge;
+    /*if (playerPosition.x - leftEdge > rightEdge) {
+        deltaX = -0.2;
+    } else if (leftEdge - playerPosition.x > 0) {
+        deltaX = 0.2;
+    }*/
+
+    if (player.velocity.x > 1) {
+        deltaX = -0.2;
+    } else if (player.velocity.x < -1) {
+        deltaX = 0.2;
     }
 
     background1.move(deltaX, 0.0f);
+    background2.move(deltaX, 0.0f);
+
+    // Check if background1 has moved off the screen to the left
+    if (background1.getPosition().x + background1.getGlobalBounds().width < cameraCenter.x - cameraSize.x / 2.0f) {
+        background1.setPosition(background2.getPosition().x + background2.getGlobalBounds().width, 0);
+    }
+
+    // Check if background2 has moved off the screen to the left
+    if (background2.getPosition().x + background2.getGlobalBounds().width < cameraCenter.x - cameraSize.x / 2.0f) {
+        background2.setPosition(background1.getPosition().x + background1.getGlobalBounds().width, 0);
+    }
+
+    // Check if background1 has moved off the screen to the right
+    if (background1.getPosition().x > cameraCenter.x + cameraSize.x / 2.0f) {
+        background1.setPosition(background2.getPosition().x - background1.getGlobalBounds().width, 0);
+    }
+
+    // Check if background2 has moved off the screen to the right
+    if (background2.getPosition().x > cameraCenter.x + cameraSize.x / 2.0f) {
+        background2.setPosition(background1.getPosition().x - background2.getGlobalBounds().width, 0);
+    }
 }
-
-/*void Graphics::updateWeaponSpritePosition() {
-
-    weaponSprite.setPosition(player.playerCharacter[1].getPosition().x, player.playerCharacter[1].getPosition().y);    
-    
-    if (player.attackBOOL) {
-        if (std::signbit(player.velocity.x)) {
-            weaponSprite.setScale(-1.f, 1.f); // Reverse X scale
-        } else if (player.velocity.x > 0) {
-            weaponSprite.setScale(1.f, 1.f);
-        }
-    } else { weaponSprite.setScale(0, 0); };
-
-}*/
-
-
-
 
 
 void Graphics::animatePlayerSprite() {
@@ -323,7 +333,7 @@ void Graphics::animatePlayerSprite() {
     sf::IntRect jumpFrames[] = { jump };
     const int NUM_JUMP_FRAMES = sizeof(jumpFrames) / sizeof(jumpFrames[0]);
 
-    sf::IntRect attackFrames[] = { /*attack1, */attack2, attack3};
+    sf::IntRect attackFrames[] = { /*attack1, attack2,*/ attack3};
     const int NUM_ATTACK_FRAMES = sizeof(attackFrames) / sizeof(attackFrames[0]);
 
 
@@ -418,12 +428,12 @@ void Graphics::animateLevelSprites() {
 }
 
 
-void Graphics::animateEnemySprites() {
 
+
+void Graphics::animateEnemySprites() {
     static sf::Clock timerEnemy;
     static int frameCount;
     //const float animationSpeed = 0.01f; // 
-
 
     sf::IntRect goroWalking1(0, 0, 62, 120);
     sf::IntRect goroWalking2(62, 0, 63, 120);
@@ -434,7 +444,12 @@ void Graphics::animateEnemySprites() {
     sf::IntRect goroWalking7(374, 0, 62, 120);
     sf::IntRect goroWalking8(436, 0, 63, 120);
     sf::IntRect goroWalking9(499, 0, 65, 120);
-
+    sf::IntRect goroDeath1(564, 0, 98, 120);
+    sf::IntRect goroDeath2(662, 0, 105, 120);
+    sf::IntRect goroDeath3(767, 0, 94, 120);
+    sf::IntRect goroDeath4(861, 0, 79, 120);
+    sf::IntRect goroDeath5(940, 0, 107, 120);
+    //sf::IntRect goroDeath6(1047, 0, 123, 120);
 
     // Define the duration of each frame in seconds
     const float FRAME_DURATION = 0.07f;
@@ -453,29 +468,53 @@ void Graphics::animateEnemySprites() {
     };
     const int NUM_WALKING_FRAMES = sizeof(walkingFrames) / sizeof(walkingFrames[0]);
 
-    sf::IntRect* frames = walkingFrames;
-    int numFrames;
-    numFrames = NUM_WALKING_FRAMES;
-
-    // Update the current frame based on the elapsed time
-    int currentFrame = static_cast<int>((timerEnemy.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
-
+    sf::IntRect deathFrames[] = {
+        goroDeath1,
+        goroDeath2,
+        goroDeath3,
+        goroDeath4,
+        goroDeath5
+        //goroDeath6
+    };
+    const int NUM_DEATH_FRAMES = sizeof(deathFrames) / sizeof(deathFrames[0]);
 
     for (int i = 0; i < enemies.enemies.size(); i++) {
-        // Set the position of each sprite to the corresponding enemy
+        sf::IntRect* frames;
+        int numFrames;
+
+        if (std::abs(enemies.enemiesVelocities[i].x) > 0.3) {
+            frames = walkingFrames;
+            numFrames = NUM_WALKING_FRAMES;
+        }
+        else if (enemies.enemiesHealth[i] <= 0) {
+            frames = deathFrames;
+            numFrames = NUM_DEATH_FRAMES;
+        }
+        else {
+            // Handle any other animation type or default behavior here
+            // ...
+            continue;
+        }
+        
+
+        // Update the current frame based on the elapsed time
+        int currentFrame = static_cast<int>((timerEnemy.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
+
         enemySprites[i].setTextureRect(frames[currentFrame]);
         enemySprites[i].setPosition(enemies.enemies[i].getPosition());
-        
-        if (enemies.enemiesVelocities[i].x < 0) { 
+
+        // Set the scale and origin of the sprite
+        if (enemies.enemiesVelocities[i].x < 0) {
             enemySprites[i].setScale(-1.5f, 1.5f);
             enemySprites[i].setOrigin(enemySprites[i].getLocalBounds().width, 0.f); // set origin to right edge
-
-        } else {
+        }
+        else {
             enemySprites[i].setScale(1.5f, 1.5f);
             enemySprites[i].setOrigin(0.f, 0.f);
         }
     }
 }
+
 
 
 void Graphics::animateItemSprites() {

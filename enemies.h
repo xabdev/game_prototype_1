@@ -26,6 +26,7 @@ class Enemies {
         const float enemyTopSpeed = 2.5f;
         const float enemyAlmostDeadSpeed = 5.f;
         const float enemyJumpSpeed = -8.5f;
+        const float enemyDeathJumpSpeed = -9.5f;
         
         
 

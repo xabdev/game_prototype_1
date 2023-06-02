@@ -68,6 +68,27 @@ void Logic::vJoy() {
         weaponCollision();
     }
 
+    if (player.dashCooldown.getElapsedTime().asSeconds() > 1.5) {
+        player.isDashing = false;
+    }
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        if (!player.isOnGround && !player.isDashing) {
+            player.dashCooldown.restart();
+            player.isDashing = true;
+            player.velocity.x -= player.dashSpeed;
+        }
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+        if (!player.isOnGround && !player.isDashing) {
+            player.dashCooldown.restart();
+            player.isDashing = true;
+            player.velocity.x += player.dashSpeed;
+        }
+    }
+
+
     updatePlayerVelocity();
     player.velocity.x *= 0.90f;
     //Position player weapon
@@ -150,7 +171,6 @@ void Logic::playerAttack() {
         player.cooldownTimer.restart();
         player.onCooldown = true;
         player.attackBOOL = false;
-        std::cout << player.attackDurationTimer.getElapsedTime().asSeconds() << "\n";
         player.attackDurationTimer.restart();
     }
 }
@@ -406,6 +426,7 @@ void Logic::enemiesRespawner() {
 
 
             offsetX += randNum(0.f, 150.f);
+            enemies.isEnemySolid[respawn] = true;
             enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
             respawn++;
             /*offsetX += randNum(0.f, 150.f);
@@ -437,13 +458,19 @@ void Logic::itemRespawner(int index) {
     if (rspwn < items.expShapes.size() - 3) {
         
         items.expShapes[rspwn].setPosition(enemies.enemies[index].getPosition().x - randNum(0, 100), enemies.enemies[index].getPosition().y);
+        items.itemVelocities[rspwn].y = randNum(-7, -2);
+
         rspwn++;
         items.expShapes[rspwn].setPosition(enemies.enemies[index].getPosition().x - randNum(0, 100), enemies.enemies[index].getPosition().y);
+        items.itemVelocities[rspwn].y = randNum(-7, -2);
         rspwn++;
         items.expShapes[rspwn].setPosition(enemies.enemies[index].getPosition().x - randNum(0, 100), enemies.enemies[index].getPosition().y);
+        items.itemVelocities[rspwn].y = randNum(-7, -2);
         rspwn++;
     }
 }
+
+
 
 
 void Logic::itemCollision() {
@@ -468,6 +495,7 @@ void Logic::itemCollisionWithLevel() {
                 if (items.expShapes[i].getGlobalBounds().intersects(platform/*.getGlobalBounds()*/)) {
                     items.expShapes[i].setPosition(items.expShapes[i].getPosition().x, shapeTop - items.expShapes[i].getSize().y);
                     items.itemVelocities[i].y = 0;
+                    
                 }
             }
         }
@@ -477,20 +505,19 @@ void Logic::itemCollisionWithLevel() {
 
 void Logic::enemyDamaged(int index) {
 
+    static bool deathpause = false;
+
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
         enemies.hitStatus[index] = false;
     }
 
     if (enemies.enemiesHealth[index] <= 0) {
-        
         itemRespawner(index);
+        enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
+        enemies.enemiesVelocities[index].x *= 0.1;
         enemies.isEnemySolid[index] = false;
-        
-
-        //enemies[index].setPosition(-200, 0);
-        //enemiesHealth[index] = 100;
-        //levelUP(50);
     }
+
 
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !enemies.hitStatus[index]) {
         enemies.hitStatus[index] = true;
@@ -512,9 +539,9 @@ sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
             enemies.enemiesVelocities[index].x = enemyToPlayer.x * enemies.enemyTopSpeed;
         }
     
-        if (enemies.enemiesHealth[index] <= 0) {
+        /*if (enemies.enemiesHealth[index] <= 0) {
                 enemies.enemiesVelocities[index].x = 0;
-        }
+        }*/
         /*if (enemies.enemiesHealth[index] <= 70) {
             enemies.enemiesVelocities[index].y = enemies.enemyJumpSpeed;
         }
@@ -553,13 +580,13 @@ void Logic::enemiesAI() {
 void Logic::logicMain() {
 
     enemiesRespawner();
-
     gravityZ();
 
     enemiesAI();
-    //playerDamaged();
+    playerDamaged();
     itemCollision();
     itemCollisionWithLevel();
+    
     playerAttack();
     
     

@@ -46,7 +46,9 @@ class Graphics {
         sf::Texture blockTexture;
         std::vector<sf::Sprite> cellSprites;
         sf::Texture background1Texture;
+        sf::Texture background2Texture;
         sf::Sprite background1;
+        sf::Sprite background2;
         sf::Texture itemTexture;
         std::vector<sf::Sprite> itemSprites;
 

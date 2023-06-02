@@ -8,7 +8,7 @@ std::vector<sf::RectangleShape> Items::createExpItem() {
     for (int i = 0; i < item_num; i++) {
         expShape.setSize(sf::Vector2f(14.5, 25));
         expShape.setFillColor(sf::Color::Transparent);
-        expShape.setPosition(-500, 200);
+        expShape.setPosition(-500, 0);
         expShapes.push_back(expShape);
     }
 

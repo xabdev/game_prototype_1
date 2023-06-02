@@ -13,6 +13,7 @@ class Player {
         std::vector<sf::RectangleShape> playerCharacter;
         sf::Vector2f velocity;
         float moveSpeed;
+        float dashSpeed = 15.f;
         float jumpSpeed = -10.f;
         int health;
         int attack;
@@ -22,11 +23,13 @@ class Player {
         
         bool isJumping;
         bool isOnGround;
+        bool isDashing = false;
         bool attacking = false;
         bool onCooldown = false;
         sf::Clock attackTiming;
         sf::Clock cooldownTimer;
         sf::Clock attackDurationTimer;
+        sf::Clock dashCooldown;
         float attackDuration = .1;
         bool attackBOOL = false;
         

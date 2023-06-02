@@ -31,7 +31,7 @@ std::vector<bool> Enemies::setEnemiesHitStatus() {
 
 std::vector<bool> Enemies::setEnemiesMass() {
 
-    bool solid = true;
+    bool solid = false;
     for (int i = 0; i < enemies.size(); i++) {
         isEnemySolid.push_back(solid);
     }
@@ -71,10 +71,12 @@ void Enemies::restartEnemies() {
     enemiesHealth.clear();
     hitCooldown.clear();
     hitStatus.clear();
+    isEnemySolid.clear();
     enemies = createEnemies();
     enemiesVelocities = setEnemiesVelocity();
     enemiesHealth = setEnemiesHealth();
     hitStatus = setEnemiesHitStatus();
     hitCooldown = setEnemiesHitCooldown();
+    isEnemySolid = setEnemiesMass();
 
 }
