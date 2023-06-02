@@ -41,16 +41,14 @@ void Graphics::render(sf::RenderWindow& window) {
     window.draw(background1);
     window.draw(background2);
     
-    for (auto& element : enemies.enemies) {
-        window.draw(element);
-    }
+
 
     /*for (auto& element : levels.levelShapes) {
         window.draw(element);
     }*/
-    for (auto& element : items.expShapes) {
+    /*for (auto& element : items.expShapes) {
         window.draw(element);
-    }
+    }*/
 
     for (auto& element : itemSprites) {
         window.draw(element);
@@ -63,6 +61,10 @@ void Graphics::render(sf::RenderWindow& window) {
     for (auto& element : enemySprites) {
         window.draw(element);
     }
+
+    /*for (auto& element : enemies.enemies) {
+        window.draw(element);
+    }*/
 
     for (auto& element : uiElements) {
         window.draw(element);

@@ -18,7 +18,7 @@ class Player {
         int health;
         int attack;
         int exp;
-        float attackCD = 0.5;
+        float attackCD = 0.3;
 
         
         bool isJumping;

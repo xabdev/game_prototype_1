@@ -119,28 +119,26 @@ void Logic::updatePlayerVelocity() {
 void Logic::playerDamaged() {
 
     for (size_t i = 0; i < enemies.enemies.size(); ++i) {
-        if (player.playerCharacter[0].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
-            player.health -= 1;
-            std::cout << "YOU GOT HIT! " << player.health << "\n";
+        if (enemies.enemiesHealth[i] > 0) {
+            if (player.playerCharacter[0].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
+                player.health -= 1;
+                std::cout << "YOU GOT HIT! " << player.health << "\n";
+            
+
+                sf::Vector2f pushDirection = player.playerCharacter[1].getPosition() - enemies.enemies[i].getPosition();
+                pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
+                float pushForce = 25.0f; // Modify this as per your requirements
+
+                player.playerCharacter[0].move(pushDirection * pushForce);
             
             
-            sf::Vector2f pushDirection = player.playerCharacter[1].getPosition() - enemies.enemies[i].getPosition();
-            pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
-            float pushForce = 25.0f; // Modify this as per your requirements
-
-            player.playerCharacter[0].move(pushDirection * pushForce);
-            
-            
-            if (player.health < 0) {
-                player.playerCharacter[0].setPosition(1600, 0);
-
-                enemies.restartEnemies();
-
-                player.health += 100;
-
-                //play = false;
+                if (player.health < 0) {
+                
+                    enemies.restartEnemies();
+                    player.playerCharacter[0].setPosition(1600, 0);
+                    player.health += 100;
+                }
             }
-
         }
     }
 }
@@ -177,20 +175,24 @@ void Logic::playerAttack() {
 
 
 void Logic::weaponCollision() {
+    float pushForce = 20.0f;
 
-        for (size_t i = 0; i < enemies.enemies.size(); ++i) {
+    for (size_t i = 0; i < enemies.enemies.size(); ++i) {
+
         if (player.playerCharacter[1].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
 
             enemyDamaged(i);
 
-            sf::Vector2f pushDirection = enemies.enemies[i].getPosition() - player.playerCharacter[1].getPosition();
-            pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
-            float pushForce = 20.0f; // Modify this as per your requirements
-            //std::cout << "push direction: " << pushDirection.x << " " << pushDirection.y << "\n";
-
-            enemies.enemies[i].move(pushDirection * pushForce);
+            if (enemies.enemiesHealth[i] > 0) {
+                sf::Vector2f pushDirection = enemies.enemies[i].getPosition() - player.playerCharacter[1].getPosition();
+                pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
+                // Modify this as per your requirements
+                //std::cout << "push direction: " << pushDirection.x << " " << pushDirection.y << "\n";
+                enemies.enemies[i].move(pushDirection * pushForce);
+            }
         }
     }
+    std::cout << pushForce << "\n";
 }
 
 
@@ -505,7 +507,6 @@ void Logic::itemCollisionWithLevel() {
 
 void Logic::enemyDamaged(int index) {
 
-    static bool deathpause = false;
 
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
         enemies.hitStatus[index] = false;
@@ -514,6 +515,10 @@ void Logic::enemyDamaged(int index) {
     if (enemies.enemiesHealth[index] <= 0) {
         itemRespawner(index);
         enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
+        if (enemies.enemiesHealth[index] < 0) {
+            enemies.enemiesVelocities[index].y = -20.f;
+        }
+        
         enemies.enemiesVelocities[index].x *= 0.1;
         enemies.isEnemySolid[index] = false;
     }

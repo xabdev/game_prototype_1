@@ -12,6 +12,7 @@ class Enemies {
         std::vector<sf::Clock> setEnemiesHitCooldown();
         std::vector<bool> setEnemiesMass();
         void restartEnemies();
+        void resetEnemiesPosition();
 
 
         std::vector<sf::RectangleShape> enemies;
@@ -26,7 +27,7 @@ class Enemies {
         const float enemyTopSpeed = 2.5f;
         const float enemyAlmostDeadSpeed = 5.f;
         const float enemyJumpSpeed = -8.5f;
-        const float enemyDeathJumpSpeed = -9.5f;
+        const float enemyDeathJumpSpeed = -11.5f;
         
         
 

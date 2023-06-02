@@ -55,24 +55,32 @@ std::vector<sf::Clock> Enemies::setEnemiesHitCooldown() {
 std::vector<sf::RectangleShape> Enemies::createEnemies() {
     sf::RectangleShape enemy;
     for (int i = 0; i < numEnemies; i++) {
-        enemy.setSize(sf::Vector2f(90, 180));
-        enemy.setFillColor(sf::Color::Transparent);
+        enemy.setSize(sf::Vector2f(70, 180));
+        enemy.setFillColor(sf::Color::Red);
         enemy.setPosition(-800, 200);
         enemies.push_back(enemy);
     }
     return enemies;
 }
 
+void Enemies::resetEnemiesPosition() {
+
+    for (auto& enemy : enemies) {
+        enemy.setPosition(-800, 200);
+    }
+}
+
 
 void Enemies::restartEnemies() {
 
-    enemies.clear();
+    //enemies.clear();
+    resetEnemiesPosition();
     enemiesVelocities.clear(); 
     enemiesHealth.clear();
     hitCooldown.clear();
     hitStatus.clear();
     isEnemySolid.clear();
-    enemies = createEnemies();
+    //enemies = createEnemies();
     enemiesVelocities = setEnemiesVelocity();
     enemiesHealth = setEnemiesHealth();
     hitStatus = setEnemiesHitStatus();
