@@ -81,54 +81,14 @@ void Graphics::render(sf::RenderWindow& window) {
 }
 
 
-/*void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
-    sf::Vector2u windowSize = window.getSize();
-    const sf::Vector2u originalWindowSize(1280, 720); // Replace with your original window size
+void Graphics::loadingScreen(sf::RenderWindow& window) { 
 
-    view.reset(sf::FloatRect(0, 0, windowSize.x, windowSize.y));
+    window.clear(sf::Color::Magenta);
+    window.display();
 
-    const float aspectRatio = static_cast<float>(originalWindowSize.x) / originalWindowSize.y;
-    float scaleFactor;
 
-    if (static_cast<float>(windowSize.x) / windowSize.y > aspectRatio) {
-        scaleFactor = static_cast<float>(windowSize.y) / originalWindowSize.y;
-    } else {
-        scaleFactor = static_cast<float>(windowSize.x) / originalWindowSize.x;
-    }
+}
 
-    const float scaledWidth = originalWindowSize.x * scaleFactor;
-    const float scaledHeight = originalWindowSize.y * scaleFactor;
-    const float offsetX = (windowSize.x - scaledWidth) / 2.0f;
-    const float offsetY = (windowSize.y - scaledHeight) / 2.0f;
-
-    view.setViewport(sf::FloatRect(offsetX / windowSize.x, offsetY / windowSize.y, scaledWidth / windowSize.x, scaledHeight / windowSize.y));
-    view.setCenter(originalWindowSize.x / 2.0f, originalWindowSize.y / 2.0f);
-    view.setSize(originalWindowSize.x, originalWindowSize.y);
-
-    // Get the player's position
-    float playerX = player.playerCharacter[0].getPosition().x;
-    float playerY = player.playerCharacter[0].getPosition().y;
-
-    // Calculate the camera bounds based on the grid
-    
-    // Modification for enemy respawner
-    //float cameraLeftEdge = scaledWidth / 2.0f;
-    float cameraLeftEdge = (scaledWidth / 2.0f) + 1500;
-    
-    float cameraRightEdge = (logic.gridWidth * logic.cellSize) - (scaledWidth / 2.0f);
-
-    // Adjust the camera position if the player reaches the edges
-    if (playerX < cameraLeftEdge)
-        playerX = cameraLeftEdge;
-    else if (playerX > cameraRightEdge)
-        playerX = cameraRightEdge;
-    
-    
-    view.setCenter(playerX, view.getCenter().y);
-    //view.setCenter(playerX, playerY);
-
-    window.setView(view);
-}*/
 
 
 void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
@@ -159,12 +119,6 @@ void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
     view.setCenter(newCenterX, newCenterY);
     window.setView(view);
 }
-
-
-
-
-
-
 
 
 sf::Texture Graphics::loadTexture(std::string filename) {
@@ -222,12 +176,12 @@ void Graphics::createUIElements() {
 
     sf::RectangleShape uiElement1;
     sf::RectangleShape uiElement2;
-    uiElement1.setSize(sf::Vector2f {200, 20});
-    uiElement2.setSize(sf::Vector2f {200, 20});
+    uiElement1.setSize(sf::Vector2f {200, 10});
+    uiElement2.setSize(sf::Vector2f {200, 10});
     uiElement1.setFillColor(sf::Color::Green);
     uiElement2.setFillColor(sf::Color::Transparent);
-    uiElement2.setOutlineColor(sf::Color::Black);
-    uiElement2.setOutlineThickness(2.0f);
+    uiElement2.setOutlineColor(sf::Color::White);
+    uiElement2.setOutlineThickness(3.0f);
     uiElements.push_back(uiElement2);
     uiElements.push_back(uiElement1);
 }
@@ -393,11 +347,11 @@ void Graphics::animatePlayerSprite() {
 void Graphics::updateUIElementsPosition(sf::View& view) {
 
     for (int i = 0; i < uiElements.size(); i++) {
-        uiElements[i].setPosition(view.getCenter().x - 620, 20);
+        uiElements[i].setPosition(view.getCenter().x - 620, 10);
     }
 
     float currentWidth = (static_cast<float>(player.health) / 100.0f) * 200;
-    uiElements[1].setSize(sf::Vector2f(currentWidth, 20));
+    uiElements[1].setSize(sf::Vector2f(currentWidth, 10));
 
     if (currentWidth > 100) {
         uiElements[1].setFillColor(sf::Color::Green);
@@ -607,6 +561,13 @@ void Graphics::animateItemSprites() {
 
 
 void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
+    
+    if (logic.restart) {
+        enemySprites.clear();
+        createEnemySprites();
+        logic.restart = false;
+    }
+
     
     updateBGSpritePosition(view);
     updateUIElementsPosition(view);

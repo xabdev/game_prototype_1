@@ -10,6 +10,7 @@ class Items {
 
         std::vector<sf::RectangleShape> createExpItem();
         std::vector<sf::Vector2f> setItemsVelocity();
+        void restartItems();
         std::vector<sf::RectangleShape> expShapes;
         std::vector<sf::Vector2f> itemVelocities;
 

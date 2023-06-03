@@ -40,6 +40,8 @@ class Logic {
         void itemCollisionWithLevel();
         std::array<bool, 4> collisionSide(const std::vector<sf::FloatRect>& platformBounds);
 
+        bool restart = false;
+
 
         std::vector<std::vector<bool>> enemyCollisionSide();
         void enemiesRespawner();

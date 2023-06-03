@@ -1,3 +1,4 @@
+#include <SFML/System/Sleep.hpp>
 #include <SFML/Window/WindowStyle.hpp>
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -10,13 +11,13 @@
 #include "items.h"
 
 
-
 void handleEvents(sf::RenderWindow& window) {
     sf::Event event;
     while (window.pollEvent(event)) {
         if (event.type == sf::Event::Closed) {
             window.close();
         }
+
     }
 }
 
@@ -45,27 +46,36 @@ void runLogicTests() {
 
 
 int main() {
+    
+    Player player;
+    Enemies enemies;
+    Levels levels;
+    Items items;
+    Logic logic(player, enemies, items);
+    Graphics graphics(logic, player, enemies, items);
+    sf::View view;
+    
+    
     sf::RenderWindow window(sf::VideoMode(1280, 720), "Grid Practice", sf::Style::Titlebar | sf::Style::Default);
+
+    graphics.loadingScreen(window);
     window.setFramerateLimit(60);
+    window.setMouseCursorGrabbed(false);
+    window.setMouseCursorVisible(false);
 
-   Player player;
-   Enemies enemies;
-   Levels levels;
-   Items items;
-   Logic logic(player, enemies, items);
-   Graphics graphics(logic, player, enemies, items);
-   sf::View view;
-   //logic.preCalculatePlatformPositions();
-
+    bool menu = false;
 
     
 
     while (window.isOpen()) {
         
-        handleEvents(window);
-                
-        logic.logicMain();
+        while(menu) {
+            handleEvents(window);
 
+        }
+                
+        handleEvents(window);
+        logic.logicMain();
         graphics.graphicsMain(window, view);
 
     }

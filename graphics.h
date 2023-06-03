@@ -15,6 +15,7 @@ class Graphics {
         Graphics(Logic& logic, Player& players, Enemies& enemies, Items& items);
 
         void render(sf::RenderWindow& window);
+        void loadingScreen(sf::RenderWindow& window);
         void cameraView(sf::RenderWindow& window, sf::View& view);
         void graphicsMain(sf::RenderWindow& window, sf::View& view);
         void updateBGSpritePosition(sf::View& view);

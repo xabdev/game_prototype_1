@@ -14,8 +14,8 @@ class Enemies {
         std::vector<bool> isEnemyHittingThePlayer();
         std::vector<sf::Clock> setEnemiesAnimationTimer();
 
-        void restartEnemies();
         void resetEnemiesPosition();
+        void restartEnemies();
 
 
         std::vector<sf::RectangleShape> enemies;

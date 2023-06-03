@@ -49,6 +49,10 @@ void Logic::vJoy() {
         player.isJumping = false;
     }
 
+    if (player.isOnGround) {
+        player.isDashing = false;
+    }
+
 
 
     // Get the intended movement direction
@@ -68,9 +72,9 @@ void Logic::vJoy() {
         weaponCollision();
     }
 
-    if (player.dashCooldown.getElapsedTime().asSeconds() > 1.5) {
+    /*if (player.dashCooldown.getElapsedTime().asSeconds() > 1.5) {
         player.isDashing = false;
-    }
+    }*/
     
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         if (!player.isOnGround && !player.isDashing) {
@@ -93,15 +97,16 @@ void Logic::vJoy() {
     player.velocity.x *= 0.90f;
     //Position player weapon
     player.playerCharacter[1].setPosition(player.playerCharacter[0].getPosition().x + player.playerCharacter[0].getSize().x / 2, player.playerCharacter[0].getPosition().y - 25);
-
-
 }
 
 
 void Logic::debugKeys() {
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
-        std::cout << player.playerCharacter[0].getPosition().x << "\n";
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::P)) {
+        std::cout << player.playerCharacter[0].getPosition().x << "\n"; }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+        std::exit(0);
+    }
 
 }
 
@@ -121,7 +126,7 @@ void Logic::playerDamaged() {
     for (size_t i = 0; i < enemies.enemies.size(); ++i) {
         if (enemies.enemiesHealth[i] > 0) {
             if (player.playerCharacter[0].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
-                //player.health -= 1;
+                player.health -= 1;
                 enemies.enemiesVelocities[i].x *= 0.1;
                 enemies.isEnemyHittingPlayer[i] = true;
             
@@ -134,7 +139,10 @@ void Logic::playerDamaged() {
             
                 if (player.health < 0) {
                 
+                    
+                    items.restartItems();
                     enemies.restartEnemies();
+                    restart = true;
                     player.playerCharacter[0].setPosition(1600, 0);
                     player.health += 100;
                 }
@@ -408,6 +416,11 @@ void Logic::enemiesRespawner() {
     sf::Time elapsed = timer.getElapsedTime();
     sf::Time decreaseElapsed = decreaseTimer.getElapsedTime();
     static int respawn;
+    if (restart) {
+        respawn = 0;
+        decreaseTimer.restart();
+    }
+    
     static float respawn_time = 5.0f;
     static bool spawnRight = true;
 
@@ -527,16 +540,16 @@ void Logic::enemyDamaged(int index) {
         enemies.isEnemyHittingPlayer[index] = false;
         enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
 
-        if (enemies.enemiesHealth[index] < 0) {
-            enemies.enemiesVelocities[index].y = -20.f;
+        //if (enemies.enemiesHealth[index] < 0) {
+          //  enemies.enemiesVelocities[index].y = -20.f;
             
-        }
+        //}
 
-        if (!player.isOnGround || player.isJumping) {
-            if (enemies.enemiesHealth[index] < 0) {
-                enemies.enemiesVelocities[index].x = pushDirection.x * 20;
-            }
+        if (enemies.enemiesHealth[index] < 0) {
+            enemies.enemiesVelocities[index].x = pushDirection.x * 20;
+                //enemies.enemiesVelocities[index].y = pushDirection.y * -10;
         }
+    
 
         enemies.isEnemySolid[index] = false;
     }
@@ -610,11 +623,13 @@ void Logic::enemiesAI() {
 
 void Logic::logicMain() {
 
-    enemiesRespawner();
+    
     gravityZ();
 
     enemiesAI();
-    playerDamaged();
+    enemiesRespawner();
+    //playerDamaged();
+    
     itemCollision();
     itemCollisionWithLevel();
     
@@ -624,4 +639,5 @@ void Logic::logicMain() {
     vJoy();
 
     debugKeys();
+    
 }

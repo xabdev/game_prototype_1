@@ -88,21 +88,20 @@ std::vector<sf::RectangleShape> Enemies::createEnemies() {
 void Enemies::resetEnemiesPosition() {
 
     for (auto& enemy : enemies) {
-        enemy.setPosition(-800, 200);
+        enemy.setPosition(-1000, 200);
     }
 }
 
 
 void Enemies::restartEnemies() {
 
-    //enemies.clear();
+
     resetEnemiesPosition();
     enemiesVelocities.clear(); 
     enemiesHealth.clear();
     hitCooldown.clear();
     hitStatus.clear();
     isEnemySolid.clear();
-    //enemies = createEnemies();
     enemiesVelocities = setEnemiesVelocity();
     enemiesHealth = setEnemiesHealth();
     hitStatus = setEnemiesHitStatus();

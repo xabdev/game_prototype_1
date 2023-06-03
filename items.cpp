@@ -22,3 +22,11 @@ std::vector<sf::Vector2f> Items::setItemsVelocity() {
     }
     return itemVelocities;
 }
+
+void Items::restartItems() {
+    expShapes.clear();
+    itemVelocities.clear();
+    
+    expShapes = createExpItem();
+    itemVelocities = setItemsVelocity();
+}
