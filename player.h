@@ -21,6 +21,7 @@ class Player {
         int expReward = 10;
         int playerLEVEL = 1;
         int nextLevelExp = 100;
+        int levelMultiplier = 2;
         float attackCD = 0.4;
 
         

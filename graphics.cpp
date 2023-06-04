@@ -510,8 +510,6 @@ void Graphics::animateEnemySprites() {
     const int NUM_DAMAGED_FRAMES = sizeof(damagedFrames) / sizeof(damagedFrames[0]);
 
 
-    
-
     for (int i = 0; i < enemies.enemies.size(); i++) {
         sf::IntRect* frames;
         int numFrames;

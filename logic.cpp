@@ -1,4 +1,5 @@
 #include "logic.h"
+#include <SFML/System/Time.hpp>
 
 
 Logic::Logic(Player& player, Enemies& enemies, Items& items) : gridmanager(gridWidth, gridHeight), player(player), enemies(enemies), items(items) {
@@ -123,7 +124,7 @@ void Logic::updatePlayerVelocity() {
 
 void Logic::gameOver() {
 
-    while (gameover) {
+    if (gameover) {
 
         restart = true;
         items.restartItems();
@@ -140,17 +141,13 @@ void Logic::playerLevelUp() {
 
     if (player.exp >= player.nextLevelExp) {
         player.playerLEVEL++;
-        player.nextLevelExp *= player.playerLEVEL;
+        player.nextLevelExp *= player.levelMultiplier;
         player.expReward += 5;
         std::cout << "Player Level: " << player.playerLEVEL << " current xp: " << player.exp << " next level: " << player.nextLevelExp << "\n";
 
     }
-
-
-
-
-
 }
+
 
 
 void Logic::playerDamaged() {
@@ -439,12 +436,12 @@ std::vector<std::vector<bool>> Logic::enemyCollisionSide() {
 
 
 void Logic::enemyCollisionWithSelf() {
-    float pushForce = 10.0f;
+    float pushForce = 20.0f;
 
     
     
     for (size_t i = 0; i < enemies.enemies.size(); ++i) {
-        if (enemies.isEnemySolid[i]) {
+        if (!enemies.isEnemySolid[i] && enemies.enemiesVelocities[i].x != 0) {
             
             sf::Vector2f pushDirection = enemies.enemies[i].getPosition() - player.playerCharacter[0].getPosition();
             pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
@@ -454,8 +451,12 @@ void Logic::enemyCollisionWithSelf() {
                 if (enemies.isEnemySolid[j]) {
                     if (enemies.enemies[i].getGlobalBounds().intersects(enemies.enemies[j].getGlobalBounds())) {
 
-                        //enemies.enemies[i].move(pushDirection.x * pushForce, 0);
-                        enemies.enemiesVelocities[j].x = 0.98 * pushDirection.x;
+                        
+                        std::cout << "tocando fiambre \n";
+                        enemyDamaged(j);
+                        //enemies.enemies[j].move(pushDirection.x * pushForce, 0);
+
+                        
                     }
 
                 }
