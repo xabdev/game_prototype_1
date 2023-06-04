@@ -16,6 +16,10 @@ class Graphics {
 
         void render(sf::RenderWindow& window);
         void loadingScreen(sf::RenderWindow& window);
+        sf::Font loadFont();
+        sf::Text formatText();
+        std::vector<sf::Text> createText();
+        void updateUIText(sf::View& view);
         void cameraView(sf::RenderWindow& window, sf::View& view);
         void graphicsMain(sf::RenderWindow& window, sf::View& view);
         void updateBGSpritePosition(sf::View& view);
@@ -35,6 +39,10 @@ class Graphics {
         void createWeaponSprite();
         void createItemSprites();
         void createUIElements();
+
+
+        sf::Font font;
+        std::vector<sf::Text> texts;
 
 
 

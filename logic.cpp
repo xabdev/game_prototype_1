@@ -121,37 +121,65 @@ void Logic::updatePlayerVelocity() {
 }
 
 
+void Logic::gameOver() {
+
+    while (gameover) {
+
+        restart = true;
+        items.restartItems();
+        enemies.restartEnemies();
+        numberOfEnemiesKilled = 0;
+        player.health += 100;
+        player.playerCharacter[0].setPosition(1600, 0);
+        gameover = false;
+    }
+}
+
+
+void Logic::playerLevelUp() {
+
+    if (player.exp >= player.nextLevelExp) {
+        player.playerLEVEL++;
+        player.nextLevelExp *= player.playerLEVEL;
+        player.expReward += 5;
+        std::cout << "Player Level: " << player.playerLEVEL << " current xp: " << player.exp << " next level: " << player.nextLevelExp << "\n";
+
+    }
+
+
+
+
+
+}
+
+
 void Logic::playerDamaged() {
 
     for (size_t i = 0; i < enemies.enemies.size(); ++i) {
         if (enemies.enemiesHealth[i] > 0) {
             if (player.playerCharacter[0].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
-                player.health -= 1;
+                
+                if (enemies.postHitInvincibility[i].getElapsedTime().asSeconds() > 0.1) {
+                    player.health -= enemies.attack;
+                    enemies.postHitInvincibility[i].restart();
+                }
+                
+                
                 enemies.enemiesVelocities[i].x *= 0.1;
                 enemies.isEnemyHittingPlayer[i] = true;
             
-                sf::Vector2f pushDirection = player.playerCharacter[1].getPosition() - enemies.enemies[i].getPosition();
-                pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
-                float pushForce = 25.0f; // Modify this as per your requirements
-
-                //player.playerCharacter[0].move(pushDirection * pushForce);
-            
-            
+                        
                 if (player.health < 0) {
-                
-                    
-                    items.restartItems();
-                    enemies.restartEnemies();
-                    restart = true;
-                    player.playerCharacter[0].setPosition(1600, 0);
-                    player.health += 100;
+                    gameover = true;
                 }
+
             } else { 
                 enemies.isEnemyHittingPlayer[i] = false;                   
-             }
+            }
         }
     }
 }
+
 
 
 void Logic::playerAttack() {
@@ -410,18 +438,48 @@ std::vector<std::vector<bool>> Logic::enemyCollisionSide() {
 }
 
 
+void Logic::enemyCollisionWithSelf() {
+    float pushForce = 10.0f;
+
+    
+    
+    for (size_t i = 0; i < enemies.enemies.size(); ++i) {
+        if (enemies.isEnemySolid[i]) {
+            
+            sf::Vector2f pushDirection = enemies.enemies[i].getPosition() - player.playerCharacter[0].getPosition();
+            pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
+
+    
+            for (size_t j = i + 1; j < enemies.enemies.size(); ++j) {
+                if (enemies.isEnemySolid[j]) {
+                    if (enemies.enemies[i].getGlobalBounds().intersects(enemies.enemies[j].getGlobalBounds())) {
+
+                        //enemies.enemies[i].move(pushDirection.x * pushForce, 0);
+                        enemies.enemiesVelocities[j].x = 0.98 * pushDirection.x;
+                    }
+
+                }
+            }
+        } 
+    }
+    
+}
+
+
 void Logic::enemiesRespawner() {
     static sf::Clock timer;
     static sf::Clock decreaseTimer;
     sf::Time elapsed = timer.getElapsedTime();
     sf::Time decreaseElapsed = decreaseTimer.getElapsedTime();
     static int respawn;
-    if (restart) {
+    static float respawn_time = 5.0f;
+    if (gameover) {
         respawn = 0;
+        respawn_time = 5.0;
         decreaseTimer.restart();
     }
     
-    static float respawn_time = 5.0f;
+    
     static bool spawnRight = true;
 
     if (respawn < enemies.enemies.size() - 5) {
@@ -494,6 +552,7 @@ void Logic::itemCollision() {
  
     for (auto& shape : items.expShapes) {
         if (player.playerCharacter[0].getGlobalBounds().intersects(shape.getGlobalBounds())) {
+            player.exp += player.expReward;
             shape.setPosition(-500, 500);
         }
     }
@@ -524,40 +583,36 @@ void Logic::itemCollisionWithLevel() {
 
 
 void Logic::enemyDamaged(int index) {
+
+    sf::Vector2f pushDirection = enemies.enemies[index].getPosition() - player.playerCharacter[0].getPosition();
+    pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
     
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
         enemies.hitStatus[index] = false;
     }
 
-    
+    if (enemies.enemiesHealth[index] <= 0 && enemies.isEnemySolid[index]) {
 
-    if (enemies.enemiesHealth[index] <= 0) {
-        sf::Vector2f pushDirection = enemies.enemies[index].getPosition() - player.playerCharacter[0].getPosition();
-        pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
-
-        enemies.enemiesVelocities[index].x = pushDirection.x * 2;
+        enemies.isEnemySolid[index] = false;
+        numberOfEnemiesKilled++;
+        enemies.enemiesVelocities[index].x = pushDirection.x * 0.1;
         itemRespawner(index);
         enemies.isEnemyHittingPlayer[index] = false;
         enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
-
-        //if (enemies.enemiesHealth[index] < 0) {
-          //  enemies.enemiesVelocities[index].y = -20.f;
-            
-        //}
-
-        if (enemies.enemiesHealth[index] < 0) {
-            enemies.enemiesVelocities[index].x = pushDirection.x * 20;
-                //enemies.enemiesVelocities[index].y = pushDirection.y * -10;
-        }
-    
-
-        enemies.isEnemySolid[index] = false;
     }
+
+    if (enemies.enemiesHealth[index] < 0 && !enemies.isEnemySolid[index]) {
+        enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
+        enemies.enemiesVelocities[index].x = pushDirection.x * 20;
+    }
+
+        
+    
 
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !enemies.hitStatus[index]) {
         enemies.hitStatus[index] = true;
         enemies.enemiesVelocities[index].x *= 0.1;
-        enemies.enemiesHealth[index] -= 50;
+        enemies.enemiesHealth[index] -= player.attack;
         enemies.hitCooldown[index].restart();
     }
 }
@@ -580,12 +635,10 @@ sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
         /*if (enemies.enemiesHealth[index] <= 0) {
                 enemies.enemiesVelocities[index].x = 0;
         }*/
-        /*if (enemies.enemiesHealth[index] <= 70) {
-            enemies.enemiesVelocities[index].y = enemies.enemyJumpSpeed;
-        }
+
         if (enemies.enemiesHealth[index] <= 50) {
                 enemies.enemiesVelocities[index].x = enemyToPlayer.x * enemies.enemyAlmostDeadSpeed;
-        }*/
+        }
 
     return enemyToPlayer;
 }
@@ -593,6 +646,7 @@ sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
 
 void Logic::enemiesAI() {
     enemies.collision = enemyCollisionSide();
+    enemyCollisionWithSelf();
 
     for (size_t i = 0; i < enemies.collision.size(); i++) {
 
@@ -625,19 +679,16 @@ void Logic::logicMain() {
 
     
     gravityZ();
-
     enemiesAI();
-    enemiesRespawner();
-    //playerDamaged();
     
+    playerDamaged();
+    enemiesRespawner();
+    gameOver();
     itemCollision();
     itemCollisionWithLevel();
-    
     playerAttack();
-    
-    
+    playerLevelUp();
     vJoy();
-
     debugKeys();
     
 }

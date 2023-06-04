@@ -62,6 +62,20 @@ std::vector<sf::Clock> Enemies::setEnemiesHitCooldown() {
     return hitCooldown;
 }
 
+
+std::vector<sf::Clock> Enemies::setPostHitInvincibility() {
+
+    sf::Clock timer;
+    for (int i = 0; i < enemies.size(); i++) {
+        sf::Clock timer;
+        postHitInvincibility.push_back(timer);
+    }
+
+    return postHitInvincibility;
+
+    
+}
+
 std::vector<sf::Clock> Enemies::setEnemiesAnimationTimer() {
     sf::Clock timer;
     for (int i = 0; i < enemies.size(); i++) {
@@ -96,6 +110,8 @@ void Enemies::resetEnemiesPosition() {
 void Enemies::restartEnemies() {
 
 
+    enemies.clear();
+    enemies = createEnemies();
     resetEnemiesPosition();
     enemiesVelocities.clear(); 
     enemiesHealth.clear();

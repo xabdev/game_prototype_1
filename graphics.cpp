@@ -3,6 +3,9 @@
 
 Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies, Items& items) : logic(logic), player(player), enemies(enemies), items(items) {
 
+    font = loadFont();
+    texts = createText();
+    
     playerTexture = loadTexture("img/player.png");
     createPlayerSprite();
     enemyTexture = loadTexture("img/gorito.png");
@@ -17,7 +20,6 @@ Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies, Items& items)
     createItemSprites();
 
     createUIElements();
-
 }
 
 
@@ -77,6 +79,10 @@ void Graphics::render(sf::RenderWindow& window) {
     
     window.draw(playerSprite);
 
+    for (auto& text : texts) {
+        window.draw(text);
+    }
+
     window.display();
 }
 
@@ -85,9 +91,53 @@ void Graphics::loadingScreen(sf::RenderWindow& window) {
 
     window.clear(sf::Color::Magenta);
     window.display();
+}
 
+sf::Font Graphics::loadFont() {
+
+    sf::Font font;
+    if (!font.loadFromFile("font/pixely.ttf")) {
+        std::cout << "failed to load font \n";
+    }
+    return font;
+}
+
+
+sf::Text Graphics::formatText() {
+    sf::Text text;
+    text.setFont(font);
+    text.setCharacterSize(15);
+    text.setFillColor(sf::Color::White);
+    
+    return text;
+}
+
+
+std::vector<sf::Text> Graphics::createText() {
+
+    sf::Text xVel = formatText();
+    sf::Text yVel = formatText();
+    sf::Text enemiesKilled = formatText();
+    enemiesKilled.setCharacterSize(25);
+    texts.push_back(xVel);
+    texts.push_back(yVel);
+    texts.push_back(enemiesKilled);
+    
+    
+    return texts;
+}
+
+void Graphics::updateUIText(sf::View& view) {
+
+    texts[0].setString("velocity.x: " + std::to_string(player.velocity.x));
+    texts[0].setPosition(view.getCenter().x + 400, 5);
+    texts[1].setString("velocity.y: " + std::to_string(player.velocity.y));
+    texts[1].setPosition(view.getCenter().x + 400, 30);
+    texts[2].setPosition(view.getCenter().x - 100, 10);
+    texts[2].setString("Enemies Killed: " + std::to_string(logic.numberOfEnemiesKilled));
 
 }
+
 
 
 
@@ -343,7 +393,6 @@ void Graphics::animatePlayerSprite() {
 
 
 
-
 void Graphics::updateUIElementsPosition(sf::View& view) {
 
     for (int i = 0; i < uiElements.size(); i++) {
@@ -576,6 +625,7 @@ void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     animateItemSprites();
     animateLevelSprites();
     cameraView(window, view);
+    updateUIText(view);
     render(window);
     
 

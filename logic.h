@@ -29,21 +29,26 @@ class Logic {
 
         void gravityZ();
         void vJoy();
+        void gameOver();
         void updatePlayerVelocity();
         void updateEnemyVelocity();
         void limitPlayerMovementToGrid();
         void preCalculatePlatformPositions();
         void playerDamaged();
         void playerAttack();
+        void playerLevelUp();
         void weaponCollision();
         void itemCollision();
         void itemCollisionWithLevel();
         std::array<bool, 4> collisionSide(const std::vector<sf::FloatRect>& platformBounds);
 
+        int numberOfEnemiesKilled = 0;
         bool restart = false;
+        bool gameover = false;
 
 
         std::vector<std::vector<bool>> enemyCollisionSide();
+        void enemyCollisionWithSelf();
         void enemiesRespawner();
         void enemiesAI();
         void enemyDamaged(int index);

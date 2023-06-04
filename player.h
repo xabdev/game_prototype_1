@@ -18,7 +18,10 @@ class Player {
         int health;
         int attack;
         int exp;
-        float attackCD = 0.3;
+        int expReward = 10;
+        int playerLEVEL = 1;
+        int nextLevelExp = 100;
+        float attackCD = 0.4;
 
         
         bool isJumping;
@@ -28,9 +31,10 @@ class Player {
         bool onCooldown = false;
         sf::Clock attackTiming;
         sf::Clock cooldownTimer;
+        
         sf::Clock attackDurationTimer;
         sf::Clock dashCooldown;
-        float attackDuration = .1;
+        float attackDuration = .05;
         bool attackBOOL = false;
         
         
@@ -44,7 +48,7 @@ class Player {
         Player() {
             moveSpeed = 0.25f;
             health = 100;
-            attack = 50;
+            attack = 20;
             velocity = {0, 0};
             playerCharacter = createPlayer();
             playerCharacter = createPlayerWeapon();
