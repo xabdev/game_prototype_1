@@ -15,6 +15,7 @@ class Graphics {
         Graphics(Logic& logic, Player& players, Enemies& enemies, Items& items);
 
         void render(sf::RenderWindow& window);
+        void showFPS();
         void loadingScreen(sf::RenderWindow& window);
         sf::Font loadFont();
         sf::Text formatText();
@@ -43,6 +44,8 @@ class Graphics {
 
         sf::Font font;
         std::vector<sf::Text> texts;
+
+        int framerate;
 
 
 

@@ -22,6 +22,23 @@ Graphics::Graphics(Logic& logic, Player& player, Enemies& enemies, Items& items)
     createUIElements();
 }
 
+void Graphics::showFPS()
+{
+    static sf::Clock clock;
+    static int frameCount = 0;
+    
+    frameCount++;
+    sf::Time time = clock.getElapsedTime();
+    if (time.asMilliseconds() > 1000)
+    {
+        float fps = static_cast<float>(frameCount) / time.asSeconds();
+        framerate = fps;
+        frameCount = 0;
+        clock.restart();
+    }
+}
+
+
 
 void Graphics::render(sf::RenderWindow& window) {
 
@@ -53,7 +70,9 @@ void Graphics::render(sf::RenderWindow& window) {
     }*/
 
     for (auto& element : itemSprites) {
-        window.draw(element);
+        if (element.getPosition().x > -500) {
+            window.draw(element);
+        }
     }
     
     for (auto& element : cellSprites) {
@@ -61,7 +80,9 @@ void Graphics::render(sf::RenderWindow& window) {
     }
     
     for (auto& element : enemySprites) {
-        window.draw(element);
+        if (element.getPosition().x > -500) {
+            window.draw(element);
+        }
     }
 
     /*for (auto& element : enemies.enemies) {
@@ -118,10 +139,16 @@ std::vector<sf::Text> Graphics::createText() {
     sf::Text xVel = formatText();
     sf::Text yVel = formatText();
     sf::Text enemiesKilled = formatText();
+    sf::Text fps = formatText();
+    sf::Text comboCounter = formatText();
+    comboCounter.setCharacterSize(55);
+    comboCounter.setFillColor(sf::Color::Green);
     enemiesKilled.setCharacterSize(25);
     texts.push_back(xVel);
     texts.push_back(yVel);
     texts.push_back(enemiesKilled);
+    texts.push_back(fps);
+    texts.push_back(comboCounter);
     
     
     return texts;
@@ -135,6 +162,13 @@ void Graphics::updateUIText(sf::View& view) {
     texts[1].setPosition(view.getCenter().x + 400, 30);
     texts[2].setPosition(view.getCenter().x - 100, 10);
     texts[2].setString("Enemies Killed: " + std::to_string(logic.numberOfEnemiesKilled));
+    texts[3].setPosition(view.getCenter().x + 400, 55);
+    texts[3].setString("FPS: " + std::to_string(framerate));
+    texts[4].setPosition(view.getCenter().x - 600, 250);
+    
+    if (player.comboCounter > 0) {
+        texts[4].setString(std::to_string(player.comboCounter));
+    } else {texts[4].setString(" ");}
 
 }
 
@@ -275,10 +309,10 @@ void Graphics::updateBGSpritePosition(sf::View& view) {
         deltaX = 0.2;
     }*/
 
-    if (player.velocity.x > 1) {
-        deltaX = -0.2;
-    } else if (player.velocity.x < -1) {
-        deltaX = 0.2;
+    if (player.velocity.x > 2.24) {
+        deltaX = -0.15;
+    } else if (player.velocity.x < -2.24) {
+        deltaX = 0.15;
     }
 
     background1.move(deltaX, 0.0f);
@@ -624,6 +658,7 @@ void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     animateLevelSprites();
     cameraView(window, view);
     updateUIText(view);
+    showFPS();
     render(window);
     
 

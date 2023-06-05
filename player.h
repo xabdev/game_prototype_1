@@ -22,6 +22,7 @@ class Player {
         int playerLEVEL = 1;
         int nextLevelExp = 100;
         int levelMultiplier = 2;
+        int comboCounter = 0;
         float attackCD = 0.4;
 
         
@@ -32,6 +33,7 @@ class Player {
         bool onCooldown = false;
         sf::Clock attackTiming;
         sf::Clock cooldownTimer;
+        sf::Clock comboCounterTimer;
         
         sf::Clock attackDurationTimer;
         sf::Clock dashCooldown;
@@ -49,7 +51,7 @@ class Player {
         Player() {
             moveSpeed = 0.25f;
             health = 100;
-            attack = 20;
+            attack = 25;
             velocity = {0, 0};
             playerCharacter = createPlayer();
             playerCharacter = createPlayerWeapon();

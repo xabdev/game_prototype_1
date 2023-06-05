@@ -14,6 +14,7 @@ class Enemies {
         std::vector<bool> isEnemyHittingThePlayer();
         std::vector<sf::Clock> setEnemiesAnimationTimer();
         std::vector<sf::Clock> setPostHitInvincibility();
+ 
 
         void resetEnemiesPosition();
         void restartEnemies();
@@ -35,9 +36,10 @@ class Enemies {
         const float enemyTopSpeed = 2.5f;
         const float enemyAlmostDeadSpeed = 5.f;
         const float enemyJumpSpeed = -8.5f;
-        const float enemyDeathJumpSpeed = -11.5f;
+        const float enemyDeathJumpSpeed = -15.f;
 
         int attack = 1;
+        int enemyCollisionDamage = 25;
         
         
 

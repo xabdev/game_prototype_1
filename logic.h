@@ -30,6 +30,8 @@ class Logic {
         void gravityZ();
         void vJoy();
         void gameOver();
+        void comboCounter();
+        void comboCounterReset();
         void updatePlayerVelocity();
         void updateEnemyVelocity();
         void limitPlayerMovementToGrid();
@@ -51,7 +53,7 @@ class Logic {
         void enemyCollisionWithSelf();
         void enemiesRespawner();
         void enemiesAI();
-        void enemyDamaged(int index);
+        void enemyDamaged(int index, int attack);
         void itemRespawner(int index);
         sf::Vector2f locatePlayerWithIndexV2(int index);
         sf::Vector2f calculateDistances(int enemyIndex, const sf::FloatRect& platformBounds);
