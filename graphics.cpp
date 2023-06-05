@@ -141,7 +141,7 @@ std::vector<sf::Text> Graphics::createText() {
     sf::Text enemiesKilled = formatText();
     sf::Text fps = formatText();
     sf::Text comboCounter = formatText();
-    comboCounter.setCharacterSize(55);
+    comboCounter.setCharacterSize(20);
     comboCounter.setFillColor(sf::Color::Green);
     enemiesKilled.setCharacterSize(25);
     texts.push_back(xVel);
@@ -166,6 +166,17 @@ void Graphics::updateUIText(sf::View& view) {
     texts[3].setString("FPS: " + std::to_string(framerate));
     texts[4].setPosition(view.getCenter().x - 600, 250);
     
+    if (player.comboCounter < 10) {
+        texts[4].setCharacterSize(40);
+    } else if (player.comboCounter > 10) {
+        texts[4].setCharacterSize(75);
+    } else if (player.comboCounter > 50) {
+        texts[4].setCharacterSize(100);
+    } else if (player.comboCounter > 100) {
+        texts[4].setCharacterSize(150);
+    }
+    
+    
     if (player.comboCounter > 0) {
         texts[4].setString(std::to_string(player.comboCounter));
     } else {texts[4].setString(" ");}
@@ -176,7 +187,15 @@ void Graphics::updateUIText(sf::View& view) {
 
 
 void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
-    sf::Vector2u windowSize = window.getSize();
+
+
+    view.reset(sf::FloatRect(0, 0, window.getSize().x, window.getSize().y));
+    float x = player.playerCharacter[0].getPosition().x;
+
+    view.setCenter(x, view.getCenter().y);
+
+    window.setView(view);
+    /*sf::Vector2u windowSize = window.getSize();
     float windowWidth = static_cast<float>(windowSize.x);
     float windowHeight = static_cast<float>(windowSize.y);
 
@@ -202,7 +221,7 @@ void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
     view.setSize(desiredWidth, windowHeight);
     view.setCenter(newCenterX, newCenterY);
     window.setView(view);
-}
+*/}
 
 
 sf::Texture Graphics::loadTexture(std::string filename) {

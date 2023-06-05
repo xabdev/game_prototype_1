@@ -54,6 +54,7 @@ class Logic {
         void enemiesRespawner();
         void enemiesAI();
         void enemyDamaged(int index, int attack);
+        void enemyWallBounce();
         void itemRespawner(int index);
         sf::Vector2f locatePlayerWithIndexV2(int index);
         sf::Vector2f calculateDistances(int enemyIndex, const sf::FloatRect& platformBounds);

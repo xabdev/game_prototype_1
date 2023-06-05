@@ -28,7 +28,6 @@ void Logic::gravityZ() {
             items.itemVelocities[i].y += Gravity;
             items.expShapes[i].move(items.itemVelocities[i]);
         }
-
     }
 }
 
@@ -139,8 +138,6 @@ void Logic::gameOver() {
 
 void Logic::comboCounter() {
     
-    std::cout << player.comboCounter << "\n";
-
     if (player.comboCounterTimer.getElapsedTime().asSeconds() < 3.0f) {
         player.comboCounter++;
         player.comboCounterTimer.restart();
@@ -164,6 +161,11 @@ void Logic::playerLevelUp() {
         player.nextLevelExp *= player.levelMultiplier;
         player.expReward += 5;
         std::cout << "Player Level: " << player.playerLEVEL << " current xp: " << player.exp << " next level: " << player.nextLevelExp << "\n";
+        player.attack += 25;
+        player.health = 100;
+        player.moveSpeed += 0.05;
+        player.jumpSpeed -= 0.5;
+        player.dashSpeed += 0.5;
 
     }
 }
@@ -206,6 +208,7 @@ void Logic::playerAttack() {
     if (player.onCooldown && player.cooldownTimer.getElapsedTime().asSeconds() > player.attackCD) {
         player.onCooldown = false;
     }
+    
 
     // Start the attack if the player is not attacking and not on cooldown
     if (!player.attacking && !player.onCooldown && player.attackBOOL) {
@@ -501,30 +504,22 @@ void Logic::enemiesRespawner() {
 
         if (elapsed.asSeconds() > respawn_time) { 
             // Check if player's position is less than 700
-            /*if (player.playerCharacter[0].getPosition().x < 1200) {
+            if (player.playerCharacter[0].getPosition().x < 1200) {
                 spawnRight = true; // Always spawn from the right
-            }*/
+            }
             if (player.playerCharacter[0].getPosition().x > 11500) {
                 spawnRight = false; // Always spawn from the left
             }
 
             // Calculate the position offset based on the spawn direction
             float offsetX = spawnRight ? 1100.0f : -1100.0f;
-
             float offsetY = player.playerCharacter[0].getPosition().y - enemies.enemies[0].getSize().y;
-
 
             offsetX += randNum(0.f, 150.f);
             enemies.isEnemySolid[respawn] = true;
             enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
             enemies.enemyAnimationTimer[respawn].restart();
             respawn++;
-            /*offsetX += randNum(0.f, 150.f);
-            enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
-            respawn++;
-            offsetX += randNum(0.f, 150.f);
-            enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
-            respawn++;*/
 
             timer.restart();
 
@@ -532,7 +527,7 @@ void Logic::enemiesRespawner() {
             spawnRight = !spawnRight;
         }
 
-        if (decreaseElapsed.asSeconds() > 15.0f && respawn_time > 0.5) {
+        if (decreaseElapsed.asSeconds() > 10.0f && respawn_time > 0.5) {
             respawn_time -= 0.50f;
             //std::cout << respawn_time << "\n";
             decreaseTimer.restart();
@@ -598,16 +593,17 @@ void Logic::itemCollisionWithLevel() {
 
 
 void Logic::enemyDamaged(int index, int attack) {
-
     sf::Vector2f pushDirection = enemies.enemies[index].getPosition() - player.playerCharacter[0].getPosition();
     pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
-    
-    if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
-        enemies.hitStatus[index] = false;
+
+
+
+    if (enemies.enemiesHealth[index] < 0 && !enemies.isEnemySolid[index]) {
+        enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
+        enemies.enemiesVelocities[index].x = pushDirection.x * 20;
     }
 
     if (enemies.enemiesHealth[index] <= 0 && enemies.isEnemySolid[index]) {
-
         enemies.isEnemySolid[index] = false;
         numberOfEnemiesKilled++;
         enemies.enemiesVelocities[index].x = pushDirection.x * 0.1;
@@ -616,14 +612,6 @@ void Logic::enemyDamaged(int index, int attack) {
         enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
     }
 
-    if (enemies.enemiesHealth[index] < 0 && !enemies.isEnemySolid[index]) {
-        enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
-        enemies.enemiesVelocities[index].x = pushDirection.x * 20;
-    }
-
-        
-    
-
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !enemies.hitStatus[index]) {
         comboCounter();
         enemies.hitStatus[index] = true;
@@ -631,7 +619,32 @@ void Logic::enemyDamaged(int index, int attack) {
         enemies.enemiesHealth[index] -= attack;
         enemies.hitCooldown[index].restart();
     }
+    if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
+        enemies.hitStatus[index] = false;
+    }
 }
+
+void Logic::enemyWallBounce() {
+
+    for (int i = 0; i < enemies.enemies.size(); i++) {
+        if (!enemies.isEnemySolid[i] && enemies.enemies[i].getPosition().x > -300 && enemies.enemies[i].getPosition().y < 900) {
+            std::cout << i << " Working" << "\n";
+            if (enemies.enemies[i].getPosition().x < player.playerCharacter[0].getPosition().x - 540) {
+                std::cout << player.playerCharacter[0].getPosition().x << "\n";
+                std::cout << "W A L L \n";
+                //enemies.enemiesVelocities[i].y = enemies.enemyJumpSpeed;
+                enemies.enemiesVelocities[i].x += 10;
+            }
+            if (enemies.enemies[i].getPosition().x > player.playerCharacter[0].getPosition().x + 540) {
+                std::cout << player.playerCharacter[0].getPosition().x << "\n";
+                std::cout << "W A L L \n";
+                //enemies.enemiesVelocities[i].y = enemies.enemyJumpSpeed;
+                enemies.enemiesVelocities[i].x -= 10;
+            }
+        }
+    }
+}
+
 
 
 
@@ -661,6 +674,7 @@ sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
 
 
 void Logic::enemiesAI() {
+    
     enemies.collision = enemyCollisionSide();
     enemyCollisionWithSelf();
 
@@ -693,7 +707,7 @@ void Logic::enemiesAI() {
 
 void Logic::logicMain() {
 
-    
+    enemyWallBounce();
     gravityZ();
     enemiesAI();
     comboCounterReset();
@@ -704,7 +718,7 @@ void Logic::logicMain() {
     itemCollision();
     itemCollisionWithLevel();
     playerAttack();
-    playerLevelUp();
+    //playerLevelUp();
     vJoy();
     debugKeys();
     

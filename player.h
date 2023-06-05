@@ -51,7 +51,7 @@ class Player {
         Player() {
             moveSpeed = 0.25f;
             health = 100;
-            attack = 25;
+            attack = 100;
             velocity = {0, 0};
             playerCharacter = createPlayer();
             playerCharacter = createPlayerWeapon();
