@@ -12,6 +12,7 @@ class Enemies {
         std::vector<sf::Clock> setEnemiesHitCooldown();
         std::vector<bool> setEnemiesMass();
         std::vector<bool> isEnemyHittingThePlayer();
+        std::vector<bool> setEnemyComboable();
         std::vector<sf::Clock> setEnemiesAnimationTimer();
         std::vector<sf::Clock> setPostHitInvincibility();
  
@@ -25,6 +26,7 @@ class Enemies {
         std::vector<int> enemiesHealth;
         std::vector<std::vector<bool>> collision;
         std::vector<bool> isEnemySolid;
+        std::vector<bool> isEnemyComboable;
         std::vector<bool> hitStatus;
         std::vector<sf::Clock> hitCooldown;
         std::vector<bool> isEnemyHittingPlayer;
@@ -38,8 +40,8 @@ class Enemies {
         const float enemyJumpSpeed = -8.5f;
         const float enemyDeathJumpSpeed = -15.f;
 
-        int attack = 1;
-        int enemyCollisionDamage = 25;
+        int attack = 5;
+        int enemyCollisionDamage = 15;
         
         
 
@@ -53,6 +55,7 @@ class Enemies {
             isEnemyHittingPlayer = isEnemyHittingThePlayer();
             enemyAnimationTimer = setEnemiesAnimationTimer();
             postHitInvincibility = setPostHitInvincibility();
+            isEnemyComboable = setEnemyComboable();
 
             
         }

@@ -50,6 +50,16 @@ std::vector<bool> Enemies::isEnemyHittingThePlayer() {
     return isEnemyHittingPlayer;
 }
 
+std::vector<bool> Enemies::setEnemyComboable() {
+
+    bool combo = false;
+    for (int i = 0; i < enemies.size(); i++) {
+        isEnemyComboable.push_back(combo);
+    }
+
+    return isEnemyComboable;
+}
+
 
 
 std::vector<sf::Clock> Enemies::setEnemiesHitCooldown() {

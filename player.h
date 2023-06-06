@@ -39,6 +39,7 @@ class Player {
         sf::Clock dashCooldown;
         float attackDuration = .05;
         bool attackBOOL = false;
+        sf::View playerView;
         
         
         std::vector<sf::RectangleShape> createPlayer();
@@ -51,7 +52,7 @@ class Player {
         Player() {
             moveSpeed = 0.25f;
             health = 100;
-            attack = 100;
+            attack = 60;
             velocity = {0, 0};
             playerCharacter = createPlayer();
             playerCharacter = createPlayerWeapon();

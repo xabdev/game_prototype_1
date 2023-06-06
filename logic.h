@@ -52,6 +52,7 @@ class Logic {
         std::vector<std::vector<bool>> enemyCollisionSide();
         void enemyCollisionWithSelf();
         void enemiesRespawner();
+        void enemyRespawner();
         void enemiesAI();
         void enemyDamaged(int index, int attack);
         void enemyWallBounce();

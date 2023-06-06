@@ -460,8 +460,6 @@ std::vector<std::vector<bool>> Logic::enemyCollisionSide() {
 
 void Logic::enemyCollisionWithSelf() {
     float pushForce = 50.0f;
-
-    
     
     for (size_t i = 0; i < enemies.enemies.size(); ++i) {
         if (!enemies.isEnemySolid[i] && enemies.enemiesVelocities[i].x != 0 && enemies.enemies[i].getPosition().y < 900) {
@@ -482,6 +480,58 @@ void Logic::enemyCollisionWithSelf() {
             }
         } 
     }
+}
+
+
+
+void Logic::enemyRespawner() {
+
+    static sf::Clock timer;
+    static sf::Clock decreaseTimer;
+    sf::Time elapsed = timer.getElapsedTime();
+    sf::Time decreaseElapsed = decreaseTimer.getElapsedTime();
+    static int respawn;
+    const int respawn_max = 1500;
+    static float respawn_time = 5.0f;
+        
+    static bool spawnRight = true;
+
+    if (respawn < enemies.enemies.size() - 5) {
+
+        if (elapsed.asSeconds() > respawn_time) { 
+            // Check if player's position is less than 700
+            if (player.playerCharacter[0].getPosition().x < 1200) {
+                spawnRight = true; // Always spawn from the right
+            }
+            if (player.playerCharacter[0].getPosition().x > 11500) {
+                spawnRight = false; // Always spawn from the left
+            }
+
+            // Calculate the position offset based on the spawn direction
+            float offsetX = spawnRight ? 1100.0f : -1100.0f;
+            float offsetY = player.playerCharacter[0].getPosition().y - enemies.enemies[0].getSize().y;
+
+            offsetX += randNum(0.f, 150.f);
+            enemies.isEnemySolid[respawn] = true;
+            enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
+            enemies.enemyAnimationTimer[respawn].restart();
+            respawn++;
+
+            timer.restart();
+
+            // Toggle the spawn direction for the next enemy
+            spawnRight = !spawnRight;
+        }
+
+        if (decreaseElapsed.asSeconds() > 10.0f && respawn_time > 0.5) {
+            respawn_time -= 0.50f;
+            //std::cout << respawn_time << "\n";
+            decreaseTimer.restart();
+        }
+    }
+
+
+
 }
 
 
@@ -590,20 +640,12 @@ void Logic::itemCollisionWithLevel() {
 
 
 
-
-
 void Logic::enemyDamaged(int index, int attack) {
     sf::Vector2f pushDirection = enemies.enemies[index].getPosition() - player.playerCharacter[0].getPosition();
     pushDirection = sf::Vector2f(pushDirection.x / std::abs(pushDirection.x), pushDirection.y / std::abs(pushDirection.y));
 
-
-
-    if (enemies.enemiesHealth[index] < 0 && !enemies.isEnemySolid[index]) {
-        enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
-        enemies.enemiesVelocities[index].x = pushDirection.x * 20;
-    }
-
     if (enemies.enemiesHealth[index] <= 0 && enemies.isEnemySolid[index]) {
+        enemies.enemiesHealth[index] = 0;
         enemies.isEnemySolid[index] = false;
         numberOfEnemiesKilled++;
         enemies.enemiesVelocities[index].x = pushDirection.x * 0.1;
@@ -612,11 +654,16 @@ void Logic::enemyDamaged(int index, int attack) {
         enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
     }
 
+    if (enemies.enemiesHealth[index] < 0 && !enemies.isEnemySolid[index]) {
+        enemies.enemiesVelocities[index].y = enemies.enemyDeathJumpSpeed;
+        enemies.enemiesVelocities[index].x = pushDirection.x * 20;
+    }
+
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !enemies.hitStatus[index]) {
         comboCounter();
         enemies.hitStatus[index] = true;
         enemies.enemiesVelocities[index].x *= 0.1;
-        enemies.enemiesHealth[index] -= attack;
+        enemies.enemiesHealth[index] -= attack;        
         enemies.hitCooldown[index].restart();
     }
     if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.05) {
@@ -624,22 +671,20 @@ void Logic::enemyDamaged(int index, int attack) {
     }
 }
 
+
+
+
 void Logic::enemyWallBounce() {
 
     for (int i = 0; i < enemies.enemies.size(); i++) {
         if (!enemies.isEnemySolid[i] && enemies.enemies[i].getPosition().x > -300 && enemies.enemies[i].getPosition().y < 900) {
-            std::cout << i << " Working" << "\n";
-            if (enemies.enemies[i].getPosition().x < player.playerCharacter[0].getPosition().x - 540) {
-                std::cout << player.playerCharacter[0].getPosition().x << "\n";
-                std::cout << "W A L L \n";
-                //enemies.enemiesVelocities[i].y = enemies.enemyJumpSpeed;
-                enemies.enemiesVelocities[i].x += 10;
+            if (enemies.enemies[i].getPosition().x < player.playerView.getCenter().x - 640) {
+                enemies.enemiesVelocities[i].x = 0;
+                enemies.enemiesVelocities[i].x += 2;
             }
-            if (enemies.enemies[i].getPosition().x > player.playerCharacter[0].getPosition().x + 540) {
-                std::cout << player.playerCharacter[0].getPosition().x << "\n";
-                std::cout << "W A L L \n";
-                //enemies.enemiesVelocities[i].y = enemies.enemyJumpSpeed;
-                enemies.enemiesVelocities[i].x -= 10;
+            if (enemies.enemies[i].getPosition().x > player.playerView.getCenter().x + 500) {
+                enemies.enemiesVelocities[i].x = 0;
+                enemies.enemiesVelocities[i].x -= 2;
             }
         }
     }
@@ -660,14 +705,6 @@ sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
             // Update only the X component of the enemy velocity based on the player's position
             enemies.enemiesVelocities[index].x = enemyToPlayer.x * enemies.enemyTopSpeed;
         }
-    
-        /*if (enemies.enemiesHealth[index] <= 0) {
-                enemies.enemiesVelocities[index].x = 0;
-        }*/
-
-        if (enemies.enemiesHealth[index] <= 25) {
-                enemies.enemiesVelocities[index].x = enemyToPlayer.x * enemies.enemyAlmostDeadSpeed;
-        }
 
     return enemyToPlayer;
 }
@@ -682,7 +719,7 @@ void Logic::enemiesAI() {
 
         //villereada 2009
         if (enemies.hitCooldown[i].getElapsedTime().asSeconds() > 0.15) {
-        enemies.hitStatus[i] = false;
+            enemies.hitStatus[i] = false;
         }
         //fin de villereada 2009
 

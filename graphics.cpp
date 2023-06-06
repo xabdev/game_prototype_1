@@ -189,13 +189,7 @@ void Graphics::updateUIText(sf::View& view) {
 void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
 
 
-    view.reset(sf::FloatRect(0, 0, window.getSize().x, window.getSize().y));
-    float x = player.playerCharacter[0].getPosition().x;
-
-    view.setCenter(x, view.getCenter().y);
-
-    window.setView(view);
-    /*sf::Vector2u windowSize = window.getSize();
+    sf::Vector2u windowSize = window.getSize();
     float windowWidth = static_cast<float>(windowSize.x);
     float windowHeight = static_cast<float>(windowSize.y);
 
@@ -218,10 +212,11 @@ void Graphics::cameraView(sf::RenderWindow& window, sf::View& view) {
 
     float newCenterY = windowHeight / 2.0f;
 
+    player.playerView = view;
     view.setSize(desiredWidth, windowHeight);
     view.setCenter(newCenterX, newCenterY);
     window.setView(view);
-*/}
+}
 
 
 sf::Texture Graphics::loadTexture(std::string filename) {
