@@ -1,0 +1,1 @@
+g++ main.cpp items.cpp levels.cpp enemies.cpp gridmanager.cpp graphics.cpp logic.cpp player.cpp -o build\p -IC:\SFML-2.5.1\include -LC:\SFML-2.5.1\lib -lsfml-graphics -lsfml-window -lsfml-system && build\p.exe

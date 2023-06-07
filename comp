@@ -1,3 +1,0 @@
-#!/bin/sh
-
-g++ main.cpp items.cpp levels.cpp enemies.cpp gridmanager.cpp graphics.cpp logic.cpp player.cpp -o p -lsfml-graphics -lsfml-window -lsfml-system && ./p
