@@ -158,15 +158,11 @@ void Logic::playerLevelUp() {
 
     if (player.exp >= player.nextLevelExp) {
         player.playerLEVEL++;
+        player.exp = 0;
         player.nextLevelExp *= player.levelMultiplier;
-        player.expReward += 5;
+        player.levelUP();
         std::cout << "Player Level: " << player.playerLEVEL << " current xp: " << player.exp << " next level: " << player.nextLevelExp << "\n";
-        player.attack += 25;
-        player.health = 100;
-        player.moveSpeed += 0.05;
-        player.jumpSpeed -= 0.5;
-        player.dashSpeed += 0.5;
-
+        std::cout << "moveSpeed: " << player.moveSpeed << " attackCD " << player.attackCD << " jumpSpeed " << player.jumpSpeed << "\n";
     }
 }
 
@@ -755,7 +751,7 @@ void Logic::logicMain() {
     itemCollision();
     itemCollisionWithLevel();
     playerAttack();
-    //playerLevelUp();
+    playerLevelUp();
     vJoy();
     debugKeys();
     

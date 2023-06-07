@@ -23,6 +23,18 @@ std::vector<sf::RectangleShape> Player::createPlayerWeapon() {
 }
 
 
+void Player::levelUP() {
+    attack += 25;
+    if (attackCD > attackDuration) {
+        attackCD -= 0.05;
+    }
+    health = 100;
+    moveSpeed += 0.25;
+    jumpSpeed -= 2.0;
+    dashSpeed += 1.0;
+}
+
+
 void Player::weaponAttack() {
 
     if (!attackBOOL && !attacking) {

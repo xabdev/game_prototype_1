@@ -272,17 +272,46 @@ void Graphics::createEnemySprites() {
 
 void Graphics::createUIElements() {
 
-    sf::RectangleShape uiElement1;
-    sf::RectangleShape uiElement2;
+    sf::RectangleShape uiElement1; //health bar
+    sf::RectangleShape uiElement2; // back of health bar
+    sf::RectangleShape uiElement3; //xp bar
     uiElement1.setSize(sf::Vector2f {200, 10});
     uiElement2.setSize(sf::Vector2f {200, 10});
+    uiElement3.setSize(sf::Vector2f {1200, 30});
     uiElement1.setFillColor(sf::Color::Green);
     uiElement2.setFillColor(sf::Color::Transparent);
     uiElement2.setOutlineColor(sf::Color::White);
     uiElement2.setOutlineThickness(3.0f);
+    uiElement3.setFillColor(sf::Color::Magenta);
     uiElements.push_back(uiElement2);
     uiElements.push_back(uiElement1);
+    uiElements.push_back(uiElement3);
 }
+
+
+void Graphics::updateUIElementsPosition(sf::View& view) {
+
+    uiElements[0].setPosition(view.getCenter().x - 620, 10);
+    uiElements[1].setPosition(view.getCenter().x - 620, 10);
+    uiElements[2].setPosition(view.getCenter().x -600, 680);
+
+
+    float currentWidthHP = (static_cast<float>(player.health) / 100.0f) * 200;
+    float currentWidthXP = (static_cast<float>(player.exp) / player.nextLevelExp) * 1200;
+
+
+    uiElements[1].setSize(sf::Vector2f(currentWidthHP, 10));
+    uiElements[2].setSize(sf::Vector2f(currentWidthXP, 30));
+
+    if (currentWidthHP > 100) {
+        uiElements[1].setFillColor(sf::Color::Green);
+    }
+    if (currentWidthHP < 100) {
+        uiElements[1].setFillColor(sf::Color::Red);
+    }
+}
+
+
 
 void Graphics::createLevelSprites() {
 
@@ -441,23 +470,7 @@ void Graphics::animatePlayerSprite() {
 
 
 
-void Graphics::updateUIElementsPosition(sf::View& view) {
 
-    for (int i = 0; i < uiElements.size(); i++) {
-        uiElements[i].setPosition(view.getCenter().x - 620, 10);
-    }
-
-    float currentWidth = (static_cast<float>(player.health) / 100.0f) * 200;
-    uiElements[1].setSize(sf::Vector2f(currentWidth, 10));
-
-    if (currentWidth > 100) {
-        uiElements[1].setFillColor(sf::Color::Green);
-    }
-    if (currentWidth < 100) {
-        uiElements[1].setFillColor(sf::Color::Red);
-    }
-
-}
 
 
 
