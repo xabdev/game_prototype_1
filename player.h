@@ -14,7 +14,7 @@ class Player {
         sf::Vector2f velocity;
         float moveSpeed;
         float dashSpeed = 5.f;
-        float jumpSpeed = -10.f;
+        float jumpSpeed = -8.f;
         int health;
         int attack;
         int exp;
@@ -45,6 +45,7 @@ class Player {
         std::vector<sf::RectangleShape> createPlayer();
         std::vector<sf::RectangleShape> createPlayerWeapon();
         void levelUP();
+        void resetPlayerStats();
         void weaponAttack();
 
         std::array<bool, 4> collision;
@@ -53,7 +54,7 @@ class Player {
         Player() {
             moveSpeed = 0.25f;
             health = 100;
-            attack = 25;
+            attack = 20;
             velocity = {0, 0};
             playerCharacter = createPlayer();
             playerCharacter = createPlayerWeapon();

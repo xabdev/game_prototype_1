@@ -129,7 +129,7 @@ void Logic::gameOver() {
         items.restartItems();
         enemies.restartEnemies();
         numberOfEnemiesKilled = 0;
-        player.health += 100;
+        player.resetPlayerStats();
         player.playerCharacter[0].setPosition(1600, 0);
         gameover = false;
     }
@@ -482,6 +482,16 @@ void Logic::enemyCollisionWithSelf() {
 
 void Logic::enemyRespawner() {
 
+    static sf::Clock gameTime;
+    sf::Time elapsedTimeHealth = gameTime.getElapsedTime();
+    int healthValue = 0;
+    if (elapsedTimeHealth.asSeconds() >= 1.0f) {
+        healthValue++;
+        std::cout << healthValue << "\n";
+    }
+    
+
+
     static sf::Clock timer;
     static sf::Clock decreaseTimer;
     sf::Time elapsed = timer.getElapsedTime();
@@ -508,6 +518,7 @@ void Logic::enemyRespawner() {
             float offsetY = player.playerCharacter[0].getPosition().y - enemies.enemies[0].getSize().y;
 
             offsetX += randNum(0.f, 150.f);
+            enemies.enemiesHealth[respawn] = 100;
             enemies.isEnemySolid[respawn] = true;
             enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
             enemies.enemyAnimationTimer[respawn].restart();
@@ -526,12 +537,21 @@ void Logic::enemyRespawner() {
         }
     }
 
-
-
 }
 
 
 void Logic::enemiesRespawner() {
+
+    static sf::Clock gameTime;
+    sf::Time elapsedTimeHealth = gameTime.getElapsedTime();
+    static int healthValue = 0;
+    if (elapsedTimeHealth.asSeconds() >= 15.0f) {
+        healthValue += 10;
+        std::cout << healthValue << "\n";
+        gameTime.restart();
+    }
+
+
     static sf::Clock timer;
     static sf::Clock decreaseTimer;
     sf::Time elapsed = timer.getElapsedTime();
@@ -563,6 +583,8 @@ void Logic::enemiesRespawner() {
 
             offsetX += randNum(0.f, 150.f);
             enemies.isEnemySolid[respawn] = true;
+            enemies.enemiesHealth[respawn] += healthValue;
+            std::cout << enemies.enemiesHealth[respawn] << "\n";
             enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
             enemies.enemyAnimationTimer[respawn].restart();
             respawn++;
@@ -688,8 +710,6 @@ void Logic::enemyWallBounce() {
 
 
 
-
-
 sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
 
     const float enemyRange = 2000.0f;
@@ -704,6 +724,7 @@ sf::Vector2f Logic::locatePlayerWithIndexV2(int index) {
 
     return enemyToPlayer;
 }
+
 
 
 void Logic::enemiesAI() {
