@@ -38,8 +38,12 @@ class Logic {
         void preCalculatePlatformPositions();
         void playerDamaged();
         void playerAttack();
+        void attackHitBoxManager();
+        void attackStart();
+        void attackEnd();
         void playerLevelUp();
         void weaponCollision();
+        void checkWeaponCollision(sf::RectangleShape weapon);
         void itemCollision();
         void itemCollisionWithLevel();
         std::array<bool, 4> collisionSide(const std::vector<sf::FloatRect>& platformBounds);
@@ -52,7 +56,6 @@ class Logic {
         std::vector<std::vector<bool>> enemyCollisionSide();
         void enemyCollisionWithSelf();
         void enemiesRespawner();
-        void enemyRespawner();
         void enemiesAI();
         void enemyDamaged(int index, int attack);
         void enemyWallBounce();

@@ -14,7 +14,7 @@ class Player {
         sf::Vector2f velocity;
         float moveSpeed;
         float dashSpeed = 5.f;
-        float jumpSpeed = -8.f;
+        float jumpSpeed = -10.f;
         int health;
         int attack;
         int exp;
@@ -31,7 +31,6 @@ class Player {
         bool isDashing = false;
         bool attacking = false;
         bool onCooldown = false;
-        sf::Clock attackTiming;
         sf::Clock cooldownTimer;
         sf::Clock comboCounterTimer;
         
@@ -54,7 +53,7 @@ class Player {
         Player() {
             moveSpeed = 0.25f;
             health = 100;
-            attack = 20;
+            attack = 25;
             velocity = {0, 0};
             playerCharacter = createPlayer();
             playerCharacter = createPlayerWeapon();

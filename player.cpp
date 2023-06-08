@@ -29,9 +29,9 @@ void Player::levelUP() {
         attackCD -= 0.05;
     }
     //health = 100;
-    moveSpeed += 0.05;
-    jumpSpeed -= 0.05;
-    dashSpeed += 0.05;
+    moveSpeed += 0.025;
+    jumpSpeed -= 0.25;
+    dashSpeed += 0.25;
 }
 
 
@@ -42,7 +42,9 @@ void Player::resetPlayerStats() {
     attack = 25;
     attackCD = 0.4;
     dashSpeed = 5.f;
-    jumpSpeed = -8.f;
+    jumpSpeed = -10.f;
+    playerLEVEL = 0;
+    exp = 0;
 }
 
 

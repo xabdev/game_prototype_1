@@ -68,8 +68,13 @@ void Logic::vJoy() {
         } else { player.isJumping = false; }
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad7) && !player.onCooldown) {
-        player.weaponAttack();
-        weaponCollision();
+        //player.weaponAttack();
+        if (!player.attackBOOL && !player.attacking) {
+            player.attackBOOL = true;
+            player.attackDurationTimer.restart();
+        }
+        checkWeaponCollision(player.playerCharacter[1]);
+        //weaponCollision();
     }
 
     /*if (player.dashCooldown.getElapsedTime().asSeconds() > 1.5) {
@@ -112,12 +117,8 @@ void Logic::debugKeys() {
 
 
 void Logic::updatePlayerVelocity() {
-    
-    //limitPlayerMovementToGrid();
     player.playerCharacter[0].move(player.velocity);
     player.collision = collisionSide(platformBounds);
-    
-    
 }
 
 
@@ -132,6 +133,7 @@ void Logic::gameOver() {
         player.resetPlayerStats();
         player.playerCharacter[0].setPosition(1600, 0);
         gameover = false;
+    
     }
 }
 
@@ -143,6 +145,7 @@ void Logic::comboCounter() {
         player.comboCounterTimer.restart();
     }
 }
+
 
 void Logic::comboCounterReset() {
 
@@ -168,7 +171,14 @@ void Logic::playerLevelUp() {
 
 
 
+
+
+
 void Logic::playerDamaged() {
+
+    if (player.playerCharacter[0].getPosition().y > 900) {
+        gameover = true;
+    }
 
     for (size_t i = 0; i < enemies.enemies.size(); ++i) {
         if (enemies.enemiesHealth[i] > 0) {
@@ -179,8 +189,7 @@ void Logic::playerDamaged() {
                     player.health -= enemies.attack;
                     enemies.postHitInvincibility[i].restart();
                 }
-                
-                
+
                 enemies.enemiesVelocities[i].x *= 0.1;
                 enemies.isEnemyHittingPlayer[i] = true;
             
@@ -198,18 +207,46 @@ void Logic::playerDamaged() {
 
 
 
+void Logic::attackStart() {
+    
+    player.attackBOOL = true;
+    player.attackDurationTimer.restart();
+}
+
+void Logic::attackEnd() {
+
+    player.attackBOOL = false;
+
+}
+
+
+
+
+void Logic::attackHitBoxManager() {
+
+
+
+
+}
+
+
+
 void Logic::playerAttack() {
+
+    std::cout << player.attackDurationTimer.getElapsedTime().asSeconds() << "\n";
+    
+    
+    
+    
     
     // Check if the attack cooldown is over
     if (player.onCooldown && player.cooldownTimer.getElapsedTime().asSeconds() > player.attackCD) {
         player.onCooldown = false;
     }
     
-
-    // Start the attack if the player is not attacking and not on cooldown
+        // Start the attack if the player is not attacking and not on cooldown
     if (!player.attacking && !player.onCooldown && player.attackBOOL) {
         player.attacking = true;
-        player.attackTiming.restart();
         if (std::signbit(player.velocity.x)) {
             player.playerCharacter[1].setScale(-1.f, 1.f); // Reverse X scale
         } else if (player.velocity.x > 0) {
@@ -226,7 +263,21 @@ void Logic::playerAttack() {
         player.attackBOOL = false;
         player.attackDurationTimer.restart();
     }
+
 }
+
+
+
+void Logic::checkWeaponCollision(sf::RectangleShape weapon) {
+    for (int i = 0; i < enemies.enemies.size(); i++) {
+        if (enemies.enemies[i].getPosition().x > -500) {
+            if (weapon.getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
+                enemyDamaged(i, player.attack);
+            }
+        }
+    }
+}
+
 
 
 void Logic::weaponCollision() {
@@ -479,75 +530,16 @@ void Logic::enemyCollisionWithSelf() {
 }
 
 
-
-void Logic::enemyRespawner() {
-
-    static sf::Clock gameTime;
-    sf::Time elapsedTimeHealth = gameTime.getElapsedTime();
-    int healthValue = 0;
-    if (elapsedTimeHealth.asSeconds() >= 1.0f) {
-        healthValue++;
-        std::cout << healthValue << "\n";
-    }
-    
-
-
-    static sf::Clock timer;
-    static sf::Clock decreaseTimer;
-    sf::Time elapsed = timer.getElapsedTime();
-    sf::Time decreaseElapsed = decreaseTimer.getElapsedTime();
-    static int respawn;
-    const int respawn_max = 1500;
-    static float respawn_time = 5.0f;
-        
-    static bool spawnRight = true;
-
-    if (respawn < enemies.enemies.size() - 5) {
-
-        if (elapsed.asSeconds() > respawn_time) { 
-            // Check if player's position is less than 700
-            if (player.playerCharacter[0].getPosition().x < 1200) {
-                spawnRight = true; // Always spawn from the right
-            }
-            if (player.playerCharacter[0].getPosition().x > 11500) {
-                spawnRight = false; // Always spawn from the left
-            }
-
-            // Calculate the position offset based on the spawn direction
-            float offsetX = spawnRight ? 1100.0f : -1100.0f;
-            float offsetY = player.playerCharacter[0].getPosition().y - enemies.enemies[0].getSize().y;
-
-            offsetX += randNum(0.f, 150.f);
-            enemies.enemiesHealth[respawn] = 100;
-            enemies.isEnemySolid[respawn] = true;
-            enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
-            enemies.enemyAnimationTimer[respawn].restart();
-            respawn++;
-
-            timer.restart();
-
-            // Toggle the spawn direction for the next enemy
-            spawnRight = !spawnRight;
-        }
-
-        if (decreaseElapsed.asSeconds() > 10.0f && respawn_time > 0.5) {
-            respawn_time -= 0.50f;
-            //std::cout << respawn_time << "\n";
-            decreaseTimer.restart();
-        }
-    }
-
-}
-
-
 void Logic::enemiesRespawner() {
 
     static sf::Clock gameTime;
     sf::Time elapsedTimeHealth = gameTime.getElapsedTime();
     static int healthValue = 0;
+    if (player.playerLEVEL == 0) {
+        healthValue = 0;
+    }
     if (elapsedTimeHealth.asSeconds() >= 15.0f) {
-        healthValue += 10;
-        std::cout << healthValue << "\n";
+        healthValue += 25;
         gameTime.restart();
     }
 
@@ -761,19 +753,25 @@ void Logic::enemiesAI() {
 
 void Logic::logicMain() {
 
-    enemyWallBounce();
+    
+    
     gravityZ();
+    vJoy();
+    playerAttack();
     enemiesAI();
+    enemyWallBounce();
+    playerLevelUp();
     comboCounterReset();
+    
     
     playerDamaged();
     enemiesRespawner();
     gameOver();
+    
     itemCollision();
     itemCollisionWithLevel();
-    playerAttack();
-    playerLevelUp();
-    vJoy();
+    
+
     debugKeys();
     
 }

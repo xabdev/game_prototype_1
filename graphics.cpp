@@ -93,12 +93,14 @@ void Graphics::render(sf::RenderWindow& window) {
         window.draw(element);
     }
 
-    /*for (auto& element : player.playerCharacter) {
+    window.draw(playerSprite);
+
+    for (auto& element : player.playerCharacter) {
         window.draw(element);
-    }*/
+    }
  
     
-    window.draw(playerSprite);
+    
 
     for (auto& text : texts) {
         window.draw(text);
