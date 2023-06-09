@@ -192,10 +192,14 @@ void Logic::playerDamaged() {
         if (enemies.enemiesHealth[i] > 0) {
             if (player.playerCharacter[0].getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds()) && !player.isDashing) {
                 
+                
+                
                 if (enemies.postHitInvincibility[i].getElapsedTime().asSeconds() > 0.1) {
                     player.comboCounter = 0;
                     player.health -= enemies.attack;
+                    
                     enemies.postHitInvincibility[i].restart();
+
                 }
 
                 enemies.enemiesVelocities[i].x *= 0.1;
@@ -207,10 +211,13 @@ void Logic::playerDamaged() {
                 }
 
             } else { 
-                enemies.isEnemyHittingPlayer[i] = false;                   
+                enemies.isEnemyHittingPlayer[i] = false;
+            
+                                 
             }
         }
     }
+
 }
 
 
@@ -245,7 +252,7 @@ void Logic::attackHitBoxManager() {
             weaponCollision();
             //checkWeaponCollision(player.playerCharacter[1]);
         }
-    } else if (player.attackDurationTimer.getElapsedTime().asSeconds() > 0.15 && !player.attackBOOL) { 
+    } else if (player.attackDurationTimer.getElapsedTime().asSeconds() > 0.20 && !player.attackBOOL) { 
         player.playerCharacter[1].setScale(0.f, 0.f);
 
     }

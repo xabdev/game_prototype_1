@@ -28,6 +28,7 @@ class Player {
         
         bool isJumping;
         bool isOnGround;
+        bool isBeingHit = false;
         bool isDashing = false;
         bool attacking = false;
         bool onCooldown = false;

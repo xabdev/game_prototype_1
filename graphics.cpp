@@ -530,23 +530,6 @@ void Graphics::animateAttackFrames(float attackDuration)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void Graphics::animateLevelSprites() {
 
     sf::Color ground = {29, 148, 82, 255 };
@@ -760,6 +743,7 @@ void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     
 
     animateAttackFrames(0.2);
+    
 
     
     
