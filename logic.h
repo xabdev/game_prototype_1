@@ -34,10 +34,8 @@ class Logic {
         void comboCounterReset();
         void updatePlayerVelocity();
         void updateEnemyVelocity();
-        void limitPlayerMovementToGrid();
         void preCalculatePlatformPositions();
         void playerDamaged();
-        void playerAttack();
         void attackHitBoxManager();
         void attackStart();
         void attackEnd();

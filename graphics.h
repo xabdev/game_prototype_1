@@ -26,6 +26,7 @@ class Graphics {
         void updateBGSpritePosition(sf::View& view);
         //void updateWeaponSpritePosition();
         void animatePlayerSprite();
+        void animateAttackFrames(float attackDuration);
         void animateEnemySprites();
         void animateLevelSprites();
         void animateItemSprites();

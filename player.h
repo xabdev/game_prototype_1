@@ -23,7 +23,7 @@ class Player {
         int nextLevelExp = 100;
         int levelMultiplier = 2;
         int comboCounter = 0;
-        float attackCD = 0.4;
+        float attackCD = 0.5;
 
         
         bool isJumping;

@@ -56,11 +56,18 @@ void Logic::vJoy() {
 
 
     // Get the intended movement direction
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-        player.velocity.x -= player.moveSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-        player.velocity.x += player.moveSpeed;
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && !player.attackBOOL)
+        if (player.velocity.x > 0) {
+            player.velocity.x = 0;
+        } else { player.velocity.x -= player.moveSpeed; }
+        
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && !player.attackBOOL)
+        if (player.velocity.x < 0) {
+            player.velocity.x = 0;
+        } else { player.velocity.x += player.moveSpeed; }
+        
+    
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && !player.attackBOOL) {
         if (!player.isJumping && player.isOnGround) {
             // Start jumping
             player.isJumping = true;
@@ -69,11 +76,12 @@ void Logic::vJoy() {
     }
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Numpad7) && !player.onCooldown) {
         //player.weaponAttack();
-        if (!player.attackBOOL && !player.attacking) {
+        /*if (!player.attackBOOL && !player.attacking) {
             player.attackBOOL = true;
             player.attackDurationTimer.restart();
-        }
-        checkWeaponCollision(player.playerCharacter[1]);
+        }*/
+        attackStart();
+        //checkWeaponCollision(player.playerCharacter[1]);
         //weaponCollision();
     }
 
@@ -208,70 +216,55 @@ void Logic::playerDamaged() {
 
 
 void Logic::attackStart() {
-    
-    player.attackBOOL = true;
-    player.attackDurationTimer.restart();
+    if (!player.attackBOOL && !player.onCooldown) {
+        player.attackBOOL = true;
+        player.onCooldown = true;
+        player.cooldownTimer.restart();
+        player.attackDurationTimer.restart();
+    }
 }
 
 void Logic::attackEnd() {
-
-    player.attackBOOL = false;
-
+    if (player.attackDurationTimer.getElapsedTime().asSeconds() > 0.2) {
+        player.attackBOOL = false;
+    }
 }
-
-
 
 
 void Logic::attackHitBoxManager() {
-
-
-
-
-}
-
-
-
-void Logic::playerAttack() {
-
-    std::cout << player.attackDurationTimer.getElapsedTime().asSeconds() << "\n";
     
     
     
-    
-    
-    // Check if the attack cooldown is over
-    if (player.onCooldown && player.cooldownTimer.getElapsedTime().asSeconds() > player.attackCD) {
-        player.onCooldown = false;
-    }
-    
-        // Start the attack if the player is not attacking and not on cooldown
-    if (!player.attacking && !player.onCooldown && player.attackBOOL) {
-        player.attacking = true;
+    if (player.attackDurationTimer.getElapsedTime().asSeconds() > 0.17 && player.attackBOOL) {
         if (std::signbit(player.velocity.x)) {
             player.playerCharacter[1].setScale(-1.f, 1.f); // Reverse X scale
+            weaponCollision();
+            //checkWeaponCollision(player.playerCharacter[1]);
         } else if (player.velocity.x > 0) {
             player.playerCharacter[1].setScale(1.f, 1.f);
+            weaponCollision();
+            //checkWeaponCollision(player.playerCharacter[1]);
         }
+    } else if (player.attackDurationTimer.getElapsedTime().asSeconds() > 0.15 && !player.attackBOOL) { 
+        player.playerCharacter[1].setScale(0.f, 0.f);
+
     }
 
-    // End the attack after the specified attack duration
-    else if (player.attacking && player.attackDurationTimer.getElapsedTime().asSeconds() > player.attackDuration) {
-        player.attacking = false;
-        player.playerCharacter[1].setScale(0.f, 0.f);
-        player.cooldownTimer.restart();
-        player.onCooldown = true;
-        player.attackBOOL = false;
-        player.attackDurationTimer.restart();
+    if (player.cooldownTimer.getElapsedTime().asSeconds() > 0.3) {
+        player.onCooldown = false;
     }
+
+    attackEnd();
 
 }
+
 
 
 
 void Logic::checkWeaponCollision(sf::RectangleShape weapon) {
     for (int i = 0; i < enemies.enemies.size(); i++) {
         if (enemies.enemies[i].getPosition().x > -500) {
-            if (weapon.getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())) {
+            if (weapon.getGlobalBounds().intersects(enemies.enemies[i].getGlobalBounds())/* && !enemies.hitStatus[i])*/) {
                 enemyDamaged(i, player.attack);
             }
         }
@@ -299,54 +292,6 @@ void Logic::weaponCollision() {
     }
 }
 
-
-void Logic::limitPlayerMovementToGrid() {
-    sf::Vector2f pos = player.playerCharacter[0].getPosition();
-    sf::Vector2f newPosition = pos + player.velocity;
-
-    // Adjust the movement if it exceeds the grid boundaries
-    if (newPosition.x < 0)
-        newPosition.x = 0;
-    if (newPosition.x + player.playerCharacter[0].getSize().x > gridWidth * cellSize) {
-        // Use pre-defined maximum X position
-        float maxX = gridWidth * cellSize - player.playerCharacter[0].getSize().x;
-        newPosition.x = std::max(maxX, pos.x);
-    }
-    if (newPosition.y < 0)
-        newPosition.y = 0;
-    if (newPosition.y + player.playerCharacter[0].getSize().y > gridHeight * cellSize) {
-        // Use pre-defined maximum Y position
-        float maxY = gridHeight * cellSize - player.playerCharacter[0].getSize().y;
-        newPosition.y = std::max(maxY, pos.y);
-    }
-
-    // Update the player's position
-    player.playerCharacter[0].setPosition(newPosition);
-
-    // Adjust the position further if it exceeds the grid boundaries
-    sf::FloatRect playerBounds = player.playerCharacter[0].getGlobalBounds();
-    sf::Vector2f playerSize = player.playerCharacter[0].getSize();
-
-    if (playerBounds.left < 0) {
-        newPosition.x = 0;
-        player.playerCharacter[0].setPosition(newPosition);
-    }
-    if (playerBounds.left + playerSize.x > gridWidth * cellSize) {
-        float maxX = gridWidth * cellSize - playerSize.x;
-        newPosition.x = maxX;
-        player.playerCharacter[0].setPosition(newPosition);
-    }
-    if (playerBounds.top < 0) {
-        newPosition.y = 0;
-        player.playerCharacter[0].setPosition(newPosition);
-    }
-    if (playerBounds.top + playerSize.y > gridHeight * cellSize) {
-        float maxY = gridHeight * cellSize - playerSize.y;
-        newPosition.y = maxY;
-        player.playerCharacter[0].setPosition(newPosition);
-    }
-
-}
 
 
 sf::Vector2i Logic::getPlayerCell() const {
@@ -576,7 +521,6 @@ void Logic::enemiesRespawner() {
             offsetX += randNum(0.f, 150.f);
             enemies.isEnemySolid[respawn] = true;
             enemies.enemiesHealth[respawn] += healthValue;
-            std::cout << enemies.enemiesHealth[respawn] << "\n";
             enemies.enemies[respawn].setPosition(player.playerCharacter[0].getPosition().x + offsetX + randNum(0, 250), randNum(0.0, offsetY));
             enemies.enemyAnimationTimer[respawn].restart();
             respawn++;
@@ -669,10 +613,9 @@ void Logic::enemyDamaged(int index, int attack) {
         enemies.enemiesVelocities[index].x = pushDirection.x * 20;
     }
 
-    if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.06 && !enemies.hitStatus[index]) {
+    if (enemies.hitCooldown[index].getElapsedTime().asSeconds() > 0.3 && !enemies.hitStatus[index]) {
         comboCounter();
         enemies.hitStatus[index] = true;
-        enemies.enemiesVelocities[index].x *= 0.1;
         enemies.enemiesHealth[index] -= attack;        
         enemies.hitCooldown[index].restart();
     }
@@ -757,7 +700,8 @@ void Logic::logicMain() {
     
     gravityZ();
     vJoy();
-    playerAttack();
+
+    attackHitBoxManager();
     enemiesAI();
     enemyWallBounce();
     playerLevelUp();

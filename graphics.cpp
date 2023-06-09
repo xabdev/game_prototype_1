@@ -94,10 +94,11 @@ void Graphics::render(sf::RenderWindow& window) {
     }
 
     window.draw(playerSprite);
+    window.draw(player.playerCharacter[1]);
 
-    for (auto& element : player.playerCharacter) {
+    /*for (auto& element : player.playerCharacter) {
         window.draw(element);
-    }
+    }*/
  
     
     
@@ -385,6 +386,7 @@ void Graphics::updateBGSpritePosition(sf::View& view) {
 }
 
 
+
 void Graphics::animatePlayerSprite() {
 
     static sf::Clock timer;
@@ -400,9 +402,7 @@ void Graphics::animatePlayerSprite() {
 
     sf::IntRect jump(561, 0, 73, 136);
 
-    sf::IntRect attack1(634, 0, 138, 136);
-    sf::IntRect attack2(772, 0, 120, 136);
-    sf::IntRect attack3(892, 0, 215, 136);
+
 
 
     // Define the duration of each frame in seconds
@@ -418,8 +418,6 @@ void Graphics::animatePlayerSprite() {
     sf::IntRect jumpFrames[] = { jump };
     const int NUM_JUMP_FRAMES = sizeof(jumpFrames) / sizeof(jumpFrames[0]);
 
-    sf::IntRect attackFrames[] = { /*attack1, attack2,*/ attack3};
-    const int NUM_ATTACK_FRAMES = sizeof(attackFrames) / sizeof(attackFrames[0]);
 
 
     // Determine which set of frames to use based on the velocity
@@ -439,11 +437,6 @@ void Graphics::animatePlayerSprite() {
         numFrames = NUM_JUMP_FRAMES;
     }
 
-    if (player.attackBOOL) {
-        
-        frames = attackFrames;
-        numFrames = NUM_ATTACK_FRAMES;
-    }
 
     // Update the current frame based on the elapsed time
     int currentFrame = static_cast<int>((timer.getElapsedTime().asSeconds() / FRAME_DURATION)) % numFrames;
@@ -469,6 +462,84 @@ void Graphics::animatePlayerSprite() {
 
 
 }
+
+
+void Graphics::animateAttackFrames(float attackDuration)
+{
+    static int currentFrame = 0;
+    static bool animationComplete = true; // Start with animation complete
+    static sf::Clock timer;
+
+    sf::IntRect attack1(634, 0, 138, 136);
+    sf::IntRect attack2(772, 0, 120, 136);
+    sf::IntRect attack3(892, 0, 215, 136);
+
+    sf::IntRect attackFrames[] = { attack1, attack2, attack3 };
+    const int numFrames = sizeof(attackFrames) / sizeof(attackFrames[0]);
+
+    // Calculate the duration for each frame
+    float frameDuration = attackDuration / numFrames;
+
+    if (player.attackBOOL)
+    {
+        // Check if the animation has completed
+        if (currentFrame >= numFrames)
+        {
+            currentFrame = 0; // Reset the current frame to 0 for a new attack
+            animationComplete = false; // Reset animationComplete to false
+        }
+
+        // Restart the timer at the beginning of each animation cycle
+        if (animationComplete)
+        {
+            timer.restart();
+            animationComplete = false;
+        }
+
+        // Get the elapsed time
+        float elapsedTime = timer.getElapsedTime().asSeconds();
+
+        // Calculate the frame counter based on the elapsed time
+        int frameCounter = static_cast<int>(elapsedTime / frameDuration);
+
+        if (frameCounter != currentFrame)
+        {
+            currentFrame = frameCounter;
+
+            if (currentFrame >= numFrames)
+            {
+                // If we have reached the last frame, stop the animation
+                currentFrame = numFrames - 1;
+                animationComplete = true;
+                //player.attackBOOL = false; // Set attackBOOL to false to indicate the end of the attack
+            }
+        }
+        // Set the texture rect based on the current frame
+        playerSprite.setTextureRect(attackFrames[currentFrame]);
+
+        // Rest of the code remains unchanged...
+    }
+    else
+    {
+        // Animation is not active or attack is complete, reset animation variables
+        currentFrame = 0;
+        animationComplete = true; // Set animationComplete to true
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -685,6 +756,14 @@ void Graphics::graphicsMain(sf::RenderWindow& window, sf::View& view) {
     animateEnemySprites();
     animateItemSprites();
     animateLevelSprites();
+
+    
+
+    animateAttackFrames(0.2);
+
+    
+    
+    
     cameraView(window, view);
     updateUIText(view);
     showFPS();

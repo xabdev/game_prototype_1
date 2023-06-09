@@ -17,7 +17,9 @@ std::vector<sf::RectangleShape> Player::createPlayerWeapon() {
     sf::Vector2f weaponSize = {180, 100};
     weapon.setSize(weaponSize);
     weapon.setScale(0, 0);
-    weapon.setFillColor(sf::Color::Magenta);
+    weapon.setFillColor(sf::Color::Transparent);
+    weapon.setOutlineColor(sf::Color::Black);
+    weapon.setOutlineThickness(2.0);
     playerCharacter.push_back(weapon);
     return playerCharacter;
 }
